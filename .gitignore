@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+.ruff_cache/
+.pytest_cache/
+dist/
+*.egg-info/
+datasets/ckd/*.csv
+datasets/hypertension/*.csv
+datasets/diabetes/*.csv
+.DS_Store

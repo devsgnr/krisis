@@ -1,0 +1,150 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "krisis"
+version = "0.1.0"
+description = "A clinical evaluation framework for large language models."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Emmanuel Watila", email = "hi@devsgnr.xyz" }
+]
+keywords = [
+    "llm",
+    "llm-evaluation",
+    "evaluation",
+    "benchmark",
+    "clinical-ai",
+    "safety",
+    "calibration",
+    "abstention",
+    "chronic-kidney-disease",
+    "healthcare",
+    "machine-learning",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+requires-python = ">=3.10"
+
+dependencies = [
+    # Data & ML
+    "pandas>=2.0.0",
+    "numpy>=1.26.0",
+    "scikit-learn>=1.4.0",
+    "joblib>=1.4.0",
+    "category-encoders>=2.6.0",
+    "scipy>=1.12.0",
+
+    # Provider SDKs are optional at runtime.
+]
+
+[project.optional-dependencies]
+
+# pip install krisis[openai]
+openai = [
+    "openai>=1.30.0",
+]
+
+# pip install krisis[anthropic]
+anthropic = [
+    "anthropic>=0.28.0",
+]
+
+# pip install krisis[huggingface]
+huggingface = [
+    "transformers>=4.40.0",
+    "huggingface-hub>=0.23.0",
+    "torch>=2.2.0",
+]
+
+# pip install krisis[grok]
+grok = [
+    "openai>=1.30.0",
+]
+
+# pip install krisis[gemini]
+gemini = [
+    "google-genai>=1.0.0",
+]
+
+# pip install krisis[all]
+# Installs every backend — useful for
+# running full model comparisons
+all = [
+    "openai>=1.30.0",
+    "anthropic>=0.28.0",
+    "google-genai>=1.0.0",
+    "transformers>=4.40.0",
+    "huggingface-hub>=0.23.0",
+    "torch>=2.2.0",
+]
+
+# pip install krisis[dev]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.4.0",
+    "mypy>=1.10.0",
+    "pandas-stubs>=2.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/devsgnr/krisis"
+Repository = "https://github.com/devsgnr/krisis"
+Issues = "https://github.com/devsgnr/krisis/issues"
+Documentation = "https://github.com/devsgnr/krisis/blob/main/README.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["krisis"]
+
+[tool.hatch.build]
+exclude = [
+    "**/.DS_Store",
+    "**/__pycache__",
+    "**/*.pyc",
+]
+
+# ── Ruff (linting + formatting) ───────────────────────────────────────────────
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501", # line too long — ruff format handles this
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["krisis"]
+
+# ── Mypy (type checking) ──────────────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.10"
+strict = true
+ignore_missing_imports = true
+pretty = true
+
+# ── Pytest ────────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=krisis --cov-report=term-missing"
