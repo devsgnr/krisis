@@ -99,7 +99,7 @@ dev = [
     "mypy>=1.10.0",
     "pandas-stubs>=2.0.0",
     "mkdocs>=1.6.0",
-    "mkdocs-material>=9.0.0,<10.0.0",
+    "mkdocs-material[imaging]>=9.0.0,<10.0.0",
     "mkdocstrings[python]>=0.30.0,<2.0.0",
 ]
 
@@ -107,16 +107,33 @@ dev = [
 Homepage = "https://github.com/devsgnr/krisis"
 Repository = "https://github.com/devsgnr/krisis"
 Issues = "https://github.com/devsgnr/krisis/issues"
-Documentation = "https://github.com/devsgnr/krisis/blob/main/README.md"
+Documentation = "https://devsgnr.github.io/krisis/"
 
 [tool.hatch.build.targets.wheel]
 packages = ["krisis"]
 
 [tool.hatch.build]
 exclude = [
+    "/.github",
+    "/build",
+    "/datasets",
+    "/dist",
+    "/docs",
+    "/examples",
+    "/results",
+    "/site",
+    "/tests",
     "**/.DS_Store",
     "**/__pycache__",
     "**/*.pyc",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "krisis",
+    "LICENSE",
+    "README.md",
+    "pyproject.toml",
 ]
 
 # ── Ruff (linting + formatting) ───────────────────────────────────────────────

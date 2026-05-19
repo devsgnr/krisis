@@ -71,6 +71,10 @@ nav:
 plugins:
   - blog:
       blog_dir: blog
+  - social:
+      enabled: !ENV [CI, false]
+      cards_include:
+        - blog/posts/ckd-detection.md
   - search
   - mkdocstrings:
       default_handler: python

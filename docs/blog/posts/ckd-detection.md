@@ -1,4 +1,6 @@
 ---
+title: CKDSuite Detection Benchmark
+description: Krisis v0.1 detection report comparing GPT-5.5, Claude Opus 4.7, and Grok 4.3 on CKDSuite selective accuracy, runtime, token use, batching behavior, and deferral behavior.
 date: 2026-05-19
 updated: 2026-05-19
 authors:
@@ -13,6 +15,10 @@ tags:
   - Anthropic
   - Grok
 readtime: 8
+social:
+  cards_layout: default/only/image
+  cards_layout_options:
+    background_image: docs/assets/reports/CKDSuite-detection-task.png
 ---
 
 # CKDSuite Detection Benchmark
