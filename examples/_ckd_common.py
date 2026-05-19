@@ -24,41 +24,58 @@ def _build_backend(
     provider: str,
     model: str | None,
     api_key: str | None = None,
+    max_output_tokens: int | None = None,
     max_retries: int = 2,
     retry_base_seconds: float = 0.5,
     retry_max_seconds: float = 8.0,
 ) -> BaseBackend:
     if provider == "anthropic":
+        kwargs: dict[str, object] = {}
+        if max_output_tokens is not None:
+            kwargs["max_tokens"] = max_output_tokens
         return AnthropicBackend(
             model=model or DEFAULT_ANTHROPIC_MODEL,
             api_key=api_key,
             max_retries=max_retries,
             retry_base_seconds=retry_base_seconds,
             retry_max_seconds=retry_max_seconds,
+            **kwargs,
         )
     if provider == "openai":
+        kwargs = {}
+        if max_output_tokens is not None:
+            kwargs["max_completion_tokens"] = max_output_tokens
         return OpenAIBackend(
             model=model or DEFAULT_OPENAI_MODEL,
             api_key=api_key,
             max_retries=max_retries,
             retry_base_seconds=retry_base_seconds,
             retry_max_seconds=retry_max_seconds,
+            **kwargs,
         )
     if provider == "grok":
+        kwargs = {}
+        if max_output_tokens is not None:
+            kwargs["max_tokens"] = max_output_tokens
         return GrokBackend(
             model=model or DEFAULT_GROK_MODEL,
             api_key=api_key,
             max_retries=max_retries,
             retry_base_seconds=retry_base_seconds,
             retry_max_seconds=retry_max_seconds,
+            **kwargs,
         )
     if provider == "gemini":
+        kwargs = {}
+        if max_output_tokens is not None:
+            kwargs["max_output_tokens"] = max_output_tokens
         return GeminiBackend(
             model=model or DEFAULT_GEMINI_MODEL,
             api_key=api_key,
             max_retries=max_retries,
             retry_base_seconds=retry_base_seconds,
             retry_max_seconds=retry_max_seconds,
+            **kwargs,
         )
     raise ValueError(f"Unsupported backend provider: {provider}")
 
@@ -72,6 +89,7 @@ def run_ckd_benchmark(
     max_retries: int,
     retry_base_seconds: float,
     retry_max_seconds: float,
+    max_output_tokens: int | None,
     limit: int | None,
     n_synthetic: int,
     features: FeatureSet,
@@ -86,6 +104,7 @@ def run_ckd_benchmark(
         backend_provider,
         model,
         api_key=api_key,
+        max_output_tokens=max_output_tokens,
         max_retries=max_retries,
         retry_base_seconds=retry_base_seconds,
         retry_max_seconds=retry_max_seconds,
@@ -130,7 +149,7 @@ def build_ckd_parser(description: str) -> argparse.ArgumentParser:
         help=(
             "Provider model id. Defaults to gpt-5.5 for OpenAI, "
             "claude-opus-4-7 for Anthropic, grok-4.3 for Grok, and "
-            "gemini-2.5-flash-lite for Gemini."
+            "gemini-3-pro-preview for Gemini."
         ),
     )
     parser.add_argument(
@@ -165,6 +184,17 @@ def build_ckd_parser(description: str) -> argparse.ArgumentParser:
         help="Maximum retry backoff delay in seconds.",
     )
     parser.add_argument(
+        "--max-output-tokens",
+        type=int,
+        default=None,
+        help=(
+            "Optional per-row output token cap. Maps to max_completion_tokens "
+            "for OpenAI, max_tokens for Anthropic/Grok, and max_output_tokens "
+            "for Gemini. Increase this when a provider returns empty or "
+            "truncated JSON."
+        ),
+    )
+    parser.add_argument(
         "--limit",
         type=int,
         default=None,
@@ -192,7 +222,10 @@ def build_ckd_parser(description: str) -> argparse.ArgumentParser:
     parser.add_argument(
         "--json",
         action="store_true",
-        help="Print aggregate benchmark results as JSON instead of text.",
+        help=(
+            "Print aggregate benchmark results as JSON instead of text. "
+            "Includes redacted prompt templates in extras.prompt_templates."
+        ),
     )
     parser.add_argument(
         "--metrics-only",
@@ -219,6 +252,7 @@ def run_ckd_task(task: Task, description: str) -> None:
         max_retries=args.max_retries,
         retry_base_seconds=args.retry_base_seconds,
         retry_max_seconds=args.retry_max_seconds,
+        max_output_tokens=args.max_output_tokens,
         limit=args.limit,
         n_synthetic=args.n_synthetic,
         features=FeatureSet(args.features),

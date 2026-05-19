@@ -183,3 +183,16 @@ def distribute_usage_over_batch(
         response.output_tokens = output_per_row
         response.total_tokens = total_per_row
     return responses
+
+
+def attach_prompt_metadata(
+    responses: list[BackendResponse],
+    *,
+    prompt: list[dict[str, str]],
+    prompt_mode: str,
+) -> list[BackendResponse]:
+    """Attach provider prompt audit metadata to response rows."""
+    for response in responses:
+        response.prompt = prompt
+        response.prompt_mode = prompt_mode
+    return responses

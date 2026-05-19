@@ -34,6 +34,7 @@ def main() -> None:
         max_retries=args.max_retries,
         retry_base_seconds=args.retry_base_seconds,
         retry_max_seconds=args.retry_max_seconds,
+        max_output_tokens=args.max_output_tokens,
         limit=args.limit,
         n_synthetic=args.n_synthetic,
         features=FeatureSet(args.features),

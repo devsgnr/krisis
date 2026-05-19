@@ -1,0 +1,109 @@
+@import url("https://rsms.me/inter/inter.css");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+.md-typeset,
+.md-tabs,
+.md-nav,
+body {
+  font-family: "Inter var", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.md-typeset,
+.md-tabs,
+.md-nav {
+  font-feature-settings:
+    "ss01" 1,
+    "cv08" 1,
+    "cv05" 1,
+    "cv01" 1,
+    "cv11" 1,
+    "cv12" 1,
+    "cv06" 1,
+    "calt" 1,
+    "dlig" 1 !important;
+}
+
+.md-typeset {
+  font-size: 14px;
+}
+
+.md-typeset table:not([class]),
+.md-typeset table:not([class]) th,
+.md-typeset table:not([class]) td,
+.md-typeset__table table,
+.md-typeset__table th,
+.md-typeset__table td {
+  font-size: 13px;
+}
+
+.md-typeset table:not([class]),
+.md-typeset__table,
+.md-typeset__table table {
+  width: 100% !important;
+}
+
+.md-typeset__scrollwrap,
+.md-typeset__table {
+  display: block;
+}
+
+.md-typeset table:not([class]),
+.md-typeset__table table {
+  display: table !important;
+  table-layout: fixed;
+}
+
+.md-typeset table:not([class]) th,
+.md-typeset table:not([class]) td,
+.md-typeset__table th,
+.md-typeset__table td {
+  overflow-wrap: anywhere;
+}
+
+.md-nav,
+.md-nav__title,
+.md-nav__item,
+.md-nav__link,
+.md-nav__list,
+.md-tabs__link,
+.md-nav--secondary {
+  font-size: 14px;
+}
+
+code,
+kbd,
+pre,
+.md-typeset code,
+.md-typeset pre {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.md-nav--secondary .md-nav__title {
+  font-size: 14px;
+}
+
+.md-author,
+.md-meta,
+.md-post,
+.md-post__authors,
+.md-post__meta,
+.md-profile,
+.md-profile__description,
+.md-profile__title {
+  font-size: 14px;
+}
+
+.md-typeset h1 {
+  font-size: 2rem;
+  font-weight: 500;
+}
+
+.md-typeset h2 {
+  font-size: 1.55rem;
+  font-weight: 500;
+}
+
+.md-typeset h3 {
+  font-size: 1.25rem;
+  font-weight: 500;
+}

@@ -242,7 +242,7 @@ def generate_sex_from_creatinine(
 
     Note:
         This is a documented assumption. The UCI CKD dataset does not
-        include patient sex. See docs/dataset_card.md for full disclosure.
+        include patient sex. See docs/datasets/ckd.md for full disclosure.
     """
     rng = np.random.default_rng(seed)
     result = []

@@ -46,6 +46,11 @@ class EvaluationResult:
     raw_response — the full raw text response from the model backend,
                    preserved for qualitative analysis and debugging.
 
+    prompt       — the provider prompt template with patient data redacted,
+                   preserved for auditability.
+
+    prompt_mode  — "single" for one-row calls, "batch" for batched calls.
+
     metadata    — pass-through of PatientRecord.metadata, giving metrics
                   access to egfr, ckd_stage, sex for breakdown analysis.
     """
@@ -55,6 +60,8 @@ class EvaluationResult:
     abstained: bool = False
     confidence: float | None = None
     raw_response: str = ""
+    prompt: list[dict[str, str]] = field(default_factory=list)
+    prompt_mode: str = ""
     metadata: dict[str, Any] = field(default_factory=dict)
     input_tokens: float | None = None
     output_tokens: float | None = None

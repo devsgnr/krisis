@@ -116,10 +116,14 @@ class CKDPreprocessor(BasePreprocessor):
     It is designed to be fitted once on the full dataset, then reused via
     transform() on new data without re-fitting.
 
-    Usage:
+    Example:
+        ```python
         preprocessor = CKDPreprocessor(seed=42)
         df_processed = preprocessor.fit_transform(df_raw)
-        # df_processed contains features + 'class' column, scaled and ready
+        ```
+
+        `df_processed` contains feature columns plus the encoded `class`
+        column, scaled and ready for feature engineering.
 
     Attributes:
         feature_set: FeatureSet.FULL or FeatureSet.REDUCED

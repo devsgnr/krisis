@@ -1,0 +1,104 @@
+site_name: Krisis
+site_description: Clinical evaluation framework for testing LLM safety behavior in medical reasoning.
+site_url: https://devsgnr.github.io/krisis/
+repo_url: https://github.com/devsgnr/krisis
+repo_name: devsgnr/krisis
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  language: en
+  font: false
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+  palette:
+    - scheme: default
+      primary: black
+      accent: indigo
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/x-twitter
+      link: https://x.com/devsgnr_
+      name: devsgnr_ on X
+    - icon: fontawesome/brands/github
+      link: https://github.com/devsgnr/krisis
+      name: Krisis on GitHub
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Core Concepts: concepts.md
+  - Framework Guide:
+      - Overview: framework-guide.md
+      - Datasets:
+          - Overview: datasets/index.md
+          - CKD Dataset: datasets/ckd.md
+          - Diabetes: datasets/diabetes.md
+          - Hypertension: datasets/hypertension.md
+      - Suites:
+          - Overview: suites/index.md
+          - CKD: suites/ckd.md
+          - Diabetes: suites/diabetes.md
+          - Hypertension: suites/hypertension.md
+      - Metrics: metrics.md
+      - Model Backends: backends.md
+      - Outputs: outputs.md
+      - Research Status: research.md
+  - API Reference:
+      - Overview: api/index.md
+      - Benchmark: api/benchmark.md
+      - Data: api/data.md
+      - Suite: api/suites.md
+      - Backend: api/backends.md
+      - Metrics: api/metrics.md
+      - Results: api/results.md
+  - Blog:
+      - blog/index.md
+
+plugins:
+  - blog:
+      blog_dir: blog
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths:
+            - .
+          options:
+            docstring_style: google
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: false
+            show_signature_annotations: true
+            separate_signature: true
+            members_order: source
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.inlinehilite
+  - pymdownx.snippets

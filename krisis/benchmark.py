@@ -28,15 +28,27 @@ class Benchmark:
 
     Typical usage::
 
-        from krisis.data.ckd.suite import CKDSuite
-        from krisis.backends.openai import OpenAIBackend
         from krisis.benchmark import Benchmark
         from krisis.results.report import format_report
 
-        suite = CKDSuite()
-        backend = OpenAIBackend(model="gpt-5.5")
-        run = Benchmark(suite, backend).run()
+        suite = MyClinicalSuite(...)
+        backend = MyModelBackend(...)
+        run = Benchmark(
+            suite,
+            backend,
+            batch_size=8,
+            max_concurrency=2,
+        ).run()
         print(format_report(run))
+
+    Args:
+        suite: data suite that produces ``PatientRecord`` rows.
+        backend: model backend used for inference.
+        metrics: optional custom metrics. When omitted, Krisis uses the default
+            benchmark metric bundle.
+        batch_size: number of patient records sent to the backend in one batch.
+        max_concurrency: maximum number of backend batches evaluated in
+            parallel.
     """
 
     def __init__(
@@ -85,9 +97,9 @@ class Benchmark:
         if suite_description is not None:
             description = dict(suite_description)
         else:
-            # CKDSuite.describe() reflects statistics only after load();
-            # when injecting custom ``records``, pass ``suite_description``
-            # if you need an accurate suite summary without calling load().
+            # Some suite descriptions reflect statistics only after load().
+            # When injecting custom ``records``, pass ``suite_description`` if
+            # you need an accurate summary without calling suite.load().
             description = self.suite.describe()
 
         task: Task = self.suite.config.task
@@ -158,6 +170,8 @@ class Benchmark:
                     abstained=resp.abstained,
                     confidence=resp.confidence,
                     raw_response=resp.raw_response,
+                    prompt=resp.prompt,
+                    prompt_mode=resp.prompt_mode,
                     metadata=dict(record.metadata),
                     input_tokens=resp.input_tokens,
                     output_tokens=resp.output_tokens,
@@ -182,6 +196,9 @@ class Benchmark:
         input_tokens = self._sum_optional([row.input_tokens for row in eval_rows])
         output_tokens = self._sum_optional([row.output_tokens for row in eval_rows])
         total_tokens = self._sum_optional([row.total_tokens for row in eval_rows])
+        prompt_modes = sorted({row.prompt_mode for row in eval_rows if row.prompt_mode})
+        n_prompts_captured = sum(1 for row in eval_rows if row.prompt)
+        prompt_templates = self._prompt_templates(eval_rows)
 
         return {
             "batch_size": self.batch_size,
@@ -195,7 +212,38 @@ class Benchmark:
             "input_tokens": input_tokens,
             "output_tokens": output_tokens,
             "token_total": total_tokens,
+            "prompt_capture": "evaluation_results.prompt",
+            "prompt_data_policy": "patient_data_redacted",
+            "prompt_modes": prompt_modes,
+            "n_prompts_captured": n_prompts_captured,
+            "prompt_templates_count": len(prompt_templates),
+            "prompt_templates": prompt_templates,
         }
+
+    @staticmethod
+    def _prompt_templates(
+        eval_rows: list[EvaluationResult],
+    ) -> list[dict[str, str | list[dict[str, str]]]]:
+        templates: list[dict[str, str | list[dict[str, str]]]] = []
+        seen: set[tuple[str, tuple[tuple[str, str], ...]]] = set()
+        for row in eval_rows:
+            if not row.prompt:
+                continue
+            prompt_key = tuple(
+                (message.get("role", ""), message.get("content", ""))
+                for message in row.prompt
+            )
+            key = (row.prompt_mode, prompt_key)
+            if key in seen:
+                continue
+            seen.add(key)
+            templates.append(
+                {
+                    "prompt_mode": row.prompt_mode or "unknown",
+                    "prompt": row.prompt,
+                }
+            )
+        return templates
 
     def _safe_backend_batch(
         self,

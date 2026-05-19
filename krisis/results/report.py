@@ -36,7 +36,12 @@ def format_report(run: BenchmarkResult) -> str:
     if run.extras:
         lines.extend(["", "Execution", "---------"])
         for key, val in sorted(run.extras.items()):
-            if isinstance(val, float):
+            if key == "prompt_templates":
+                count = len(val) if isinstance(val, list) else 0
+                lines.append(
+                    f"  {key}: {count} redacted template(s); use JSON output to inspect"
+                )
+            elif isinstance(val, float):
                 lines.append(f"  {key}: {val:.4f}")
             else:
                 lines.append(f"  {key}: {val}")

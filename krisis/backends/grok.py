@@ -9,8 +9,14 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from krisis.backends.base import BackendResponse, BaseBackend
+from krisis.backends.base import (
+    BackendResponse,
+    BaseBackend,
+    empty_response_message,
+    format_messages_for_audit,
+)
 from krisis.backends.batching import (
+    attach_prompt_metadata,
     batch_response_schema,
     build_batch_messages,
     distribute_usage_over_batch,
@@ -71,7 +77,10 @@ class GrokBackend(BaseBackend):
         api_key: optional xAI API key; falls back to ``XAI_API_KEY``
         base_url: xAI API base URL
         client: optional pre-built OpenAI-compatible client for tests
-        **kwargs: forwarded to ``OpenAI()`` when client is omitted
+        max_retries: number of retries after transient provider failures
+        retry_base_seconds: initial exponential-backoff delay
+        retry_max_seconds: maximum exponential-backoff delay
+        **client_kwargs: forwarded to ``OpenAI()`` when client is omitted
     """
 
     def __init__(
@@ -117,9 +126,11 @@ class GrokBackend(BaseBackend):
         return f"grok:{self._model}"
 
     def evaluate(self, record: PatientRecord, task: Task) -> BackendResponse:
+        messages = build_messages(record, task)
+        prompt = format_messages_for_audit(messages)
         request: dict[str, Any] = {
             "model": self._model,
-            "messages": build_messages(record, task),
+            "messages": messages,
             "response_format": _response_format_for_task(task),
         }
         if self._temperature is not None:
@@ -133,10 +144,18 @@ class GrokBackend(BaseBackend):
             base_delay_seconds=self._retry_base_seconds,
             max_delay_seconds=self._retry_max_seconds,
         )
-        choice = completion.choices[0].message
+        choice_obj = completion.choices[0]
+        choice = choice_obj.message
         raw = (choice.content or "").strip()
         if not raw:
-            raise ValueError(f"{self.name} returned an empty response.")
+            raise ValueError(
+                empty_response_message(
+                    self.name,
+                    token_cap_name="max_tokens",
+                    mode="single",
+                    finish_reason=getattr(choice_obj, "finish_reason", None),
+                )
+            )
         parsed = parse_model_response(raw, task)
         if (
             parsed.prediction is None
@@ -152,6 +171,8 @@ class GrokBackend(BaseBackend):
             abstained=parsed.abstained,
             confidence=parsed.confidence,
             raw_response=raw,
+            prompt=prompt,
+            prompt_mode="single",
             input_tokens=usage.input_tokens,
             output_tokens=usage.output_tokens,
             total_tokens=usage.total_tokens,
@@ -164,10 +185,12 @@ class GrokBackend(BaseBackend):
     ) -> list[BackendResponse]:
         if not records:
             return []
+        messages = build_batch_messages(records, task)
+        prompt = format_messages_for_audit(messages)
 
         request: dict[str, Any] = {
             "model": self._model,
-            "messages": build_batch_messages(records, task),
+            "messages": messages,
             "response_format": _batch_response_format_for_task(task),
         }
         if self._temperature is not None:
@@ -181,9 +204,20 @@ class GrokBackend(BaseBackend):
             base_delay_seconds=self._retry_base_seconds,
             max_delay_seconds=self._retry_max_seconds,
         )
-        choice = completion.choices[0].message
+        choice_obj = completion.choices[0]
+        choice = choice_obj.message
         raw = (choice.content or "").strip()
+        if not raw:
+            raise ValueError(
+                empty_response_message(
+                    self.name,
+                    token_cap_name="max_tokens",
+                    mode="batch",
+                    finish_reason=getattr(choice_obj, "finish_reason", None),
+                )
+            )
         responses = parse_batch_response(raw, task, len(records))
+        attach_prompt_metadata(responses, prompt=prompt, prompt_mode="batch")
         usage = usage_from_openai_compatible_response(completion)
         return distribute_usage_over_batch(responses, usage)
 

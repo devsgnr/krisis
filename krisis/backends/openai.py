@@ -8,8 +8,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from krisis.backends.base import BackendResponse, BaseBackend
+from krisis.backends.base import (
+    BackendResponse,
+    BaseBackend,
+    empty_response_message,
+    format_messages_for_audit,
+)
 from krisis.backends.batching import (
+    attach_prompt_metadata,
     batch_response_schema,
     build_batch_messages,
     distribute_usage_over_batch,
@@ -70,14 +76,17 @@ class OpenAIBackend(BaseBackend):
         max_completion_tokens: optional cap for completion tokens
         api_key: optional OpenAI API key; falls back to environment variables
         client: optional pre-built ``openai.OpenAI`` client for injection/tests
-        **kwargs: forwarded to ``OpenAI()`` when client is omitted
+        max_retries: number of retries after transient provider failures
+        retry_base_seconds: initial exponential-backoff delay
+        retry_max_seconds: maximum exponential-backoff delay
+        **client_kwargs: forwarded to ``OpenAI()`` when client is omitted
     """
 
     def __init__(
         self,
         model: str = DEFAULT_OPENAI_MODEL,
         temperature: float | None = None,
-        max_completion_tokens: int | None = 256,
+        max_completion_tokens: int | None = 1024,
         api_key: str | None = None,
         client: Any | None = None,
         max_retries: int = 2,
@@ -111,6 +120,7 @@ class OpenAIBackend(BaseBackend):
 
     def evaluate(self, record: PatientRecord, task: Task) -> BackendResponse:
         messages = build_messages(record, task)
+        prompt = format_messages_for_audit(messages)
         request: dict[str, Any] = {
             "model": self._model,
             "messages": messages,
@@ -128,10 +138,18 @@ class OpenAIBackend(BaseBackend):
             base_delay_seconds=self._retry_base_seconds,
             max_delay_seconds=self._retry_max_seconds,
         )
-        choice = completion.choices[0].message
+        choice_obj = completion.choices[0]
+        choice = choice_obj.message
         raw = (choice.content or "").strip()
         if not raw:
-            raise ValueError(f"{self.name} returned an empty response.")
+            raise ValueError(
+                empty_response_message(
+                    self.name,
+                    token_cap_name="max_completion_tokens",
+                    mode="single",
+                    finish_reason=getattr(choice_obj, "finish_reason", None),
+                )
+            )
         parsed = parse_model_response(raw, task)
         if (
             parsed.prediction is None
@@ -147,6 +165,8 @@ class OpenAIBackend(BaseBackend):
             abstained=parsed.abstained,
             confidence=parsed.confidence,
             raw_response=raw,
+            prompt=prompt,
+            prompt_mode="single",
             input_tokens=usage.input_tokens,
             output_tokens=usage.output_tokens,
             total_tokens=usage.total_tokens,
@@ -159,10 +179,12 @@ class OpenAIBackend(BaseBackend):
     ) -> list[BackendResponse]:
         if not records:
             return []
+        messages = build_batch_messages(records, task)
+        prompt = format_messages_for_audit(messages)
 
         request: dict[str, Any] = {
             "model": self._model,
-            "messages": build_batch_messages(records, task),
+            "messages": messages,
             "response_format": _batch_response_format_for_task(task),
             "store": False,
         }
@@ -179,9 +201,20 @@ class OpenAIBackend(BaseBackend):
             base_delay_seconds=self._retry_base_seconds,
             max_delay_seconds=self._retry_max_seconds,
         )
-        choice = completion.choices[0].message
+        choice_obj = completion.choices[0]
+        choice = choice_obj.message
         raw = (choice.content or "").strip()
+        if not raw:
+            raise ValueError(
+                empty_response_message(
+                    self.name,
+                    token_cap_name="max_completion_tokens",
+                    mode="batch",
+                    finish_reason=getattr(choice_obj, "finish_reason", None),
+                )
+            )
         responses = parse_batch_response(raw, task, len(records))
+        attach_prompt_metadata(responses, prompt=prompt, prompt_mode="batch")
         usage = usage_from_openai_compatible_response(completion)
         return distribute_usage_over_batch(responses, usage)
 

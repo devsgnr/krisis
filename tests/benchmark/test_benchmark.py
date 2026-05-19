@@ -49,6 +49,8 @@ class _EchoBackend(BaseBackend):
             raw_response='{"abstained": false, "confidence": 0.75, "prediction": '
             + str(int(record.label))
             + "}",
+            prompt=[{"role": "system", "content": "fake single prompt"}],
+            prompt_mode="single",
             input_tokens=10,
             output_tokens=2,
             total_tokens=12,
@@ -252,6 +254,10 @@ def test_format_json_report_contains_metrics_and_results() -> None:
     assert data["suite"]["domain"] == "fake"
     assert data["metrics"]["Abstention Rate"]["value"] == 0.0
     assert data["evaluation_results"][0]["ground_truth"] == 0
+    assert data["evaluation_results"][0]["prompt"] == [
+        {"role": "system", "content": "fake single prompt"}
+    ]
+    assert data["evaluation_results"][0]["prompt_mode"] == "single"
 
 
 def test_benchmark_result_json_replaces_nan_with_null() -> None:
@@ -283,6 +289,17 @@ def test_format_metrics_json_report_contains_only_metrics() -> None:
     assert data["execution"]["input_tokens"] == 10.0
     assert data["execution"]["output_tokens"] == 2.0
     assert data["execution"]["token_total"] == 12.0
+    assert data["execution"]["prompt_capture"] == "evaluation_results.prompt"
+    assert data["execution"]["prompt_data_policy"] == "patient_data_redacted"
+    assert data["execution"]["prompt_modes"] == ["single"]
+    assert data["execution"]["n_prompts_captured"] == 1
+    assert data["execution"]["prompt_templates_count"] == 1
+    assert data["execution"]["prompt_templates"] == [
+        {
+            "prompt_mode": "single",
+            "prompt": [{"role": "system", "content": "fake single prompt"}],
+        }
+    ]
 
 
 def test_deferral_alignment_skipped_without_labels() -> None:

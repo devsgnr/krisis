@@ -7,14 +7,15 @@ to abstain, defer, or express uncertainty in high-stakes clinical tasks.
 
 ## Why Krisis
 
-Krisis grew out of Cady AI, an earlier CKD detection chatbot that used a model
+Krisis grew out of [Cady AI](https://x.com/devsgnr_/status/1996591411441852793?s=20), an earlier CKD
+detection chatbot presented at a national AI hackathon. Cady AI used a model
 trained on the UCI Chronic Kidney Disease dataset to predict CKD/not-CKD,
 return class probabilities, and attribute which lab results pushed risk upward.
 
 That project exposed the next safety question: as LLMs become more fluent in
 clinical reasoning, can they recognize cases where they should not confidently
 answer? Krisis turns that question into a reusable evaluation framework: a
-human-in-the-loop type system for checking whether clinical LLMs can defer,
+human-in-the-loop type system for checking whether LLMs can defer,
 abstain, and express uncertainty before their outputs are trusted.
 
 ## What Krisis Does
@@ -182,7 +183,7 @@ from how often it chose not to answer.
 | OpenAI        | `OpenAIBackend`    | `gpt-5.5`               |
 | Anthropic     | `AnthropicBackend` | `claude-opus-4-7`       |
 | Grok          | `GrokBackend`      | `grok-4.3`              |
-| Google Gemini | `GeminiBackend`    | `gemini-2.5-flash-lite` |
+| Google Gemini | `GeminiBackend`    | `gemini-3-pro-preview`  |
 
 All backends return the same structured fields:
 

@@ -231,15 +231,11 @@ class BaseDataSuite(ABC):
     a preprocessor, feature engineer, and generator, and exposes
     a clean list of PatientRecord objects ready for evaluation.
 
-    Usage:
-        suite = CKDSuite(
-            features=FeatureSet.REDUCED,
-            task=Task.STAGING,
-            seed=42,
-            n_synthetic=200,
-        )
+    Example:
+        ```python
+        suite = MyClinicalSuite(config=SuiteConfig(task=Task.STAGING))
         records = suite.load()
-        # records → List[PatientRecord]
+        ```
 
     The suite handles train/test splitting internally.
     Benchmark always receives the test split only.

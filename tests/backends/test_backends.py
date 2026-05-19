@@ -91,12 +91,17 @@ def test_openai_backend_uses_structured_chat_completion_request() -> None:
     assert response.input_tokens == 50
     assert response.output_tokens == 10
     assert response.total_tokens == 60
+    assert response.prompt[1]["role"] == "user"
+    assert "Patient markers" in response.prompt[1]["content"]
+    assert "[PATIENT_MARKERS_REDACTED]" in response.prompt[1]["content"]
+    assert "2.4" not in str(response.prompt)
+    assert response.prompt_mode == "single"
 
     request = client.completions.last_request
     assert request is not None
     assert request["model"] == DEFAULT_OPENAI_MODEL
     assert "temperature" not in request
-    assert request["max_completion_tokens"] == 256
+    assert request["max_completion_tokens"] == 1024
     assert request["store"] is False
     assert request["response_format"]["type"] == "json_schema"
     assert request["response_format"]["json_schema"]["strict"] is True
@@ -138,10 +143,15 @@ def test_openai_backend_batches_records_with_stable_ids() -> None:
     assert [r.abstained for r in responses] == [False, True]
     assert [r.input_tokens for r in responses] == [50, 50]
     assert [r.output_tokens for r in responses] == [10, 10]
+    assert all(r.prompt_mode == "batch" for r in responses)
+    assert all(
+        "[BATCH_PATIENT_DATA_REDACTED]" in r.prompt[1]["content"] for r in responses
+    )
+    assert all("2.4" not in str(r.prompt) for r in responses)
 
     request = client.completions.last_request
     assert request is not None
-    assert request["max_completion_tokens"] == 512
+    assert request["max_completion_tokens"] == 2048
     schema = request["response_format"]["json_schema"]["schema"]
     assert "results" in schema["properties"]
     assert "case_0" in request["messages"][1]["content"]

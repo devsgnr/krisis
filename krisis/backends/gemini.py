@@ -9,8 +9,14 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from krisis.backends.base import BackendResponse, BaseBackend
+from krisis.backends.base import (
+    BackendResponse,
+    BaseBackend,
+    empty_response_message,
+    format_messages_for_audit,
+)
 from krisis.backends.batching import (
+    attach_prompt_metadata,
     batch_response_schema,
     build_batch_messages,
     distribute_usage_over_batch,
@@ -23,7 +29,7 @@ from krisis.data.base import PatientRecord, Task
 from krisis.prompts.base import build_messages
 from krisis.tasks.base import parse_model_response
 
-DEFAULT_GEMINI_MODEL = "gemini-2.5-flash-lite"
+DEFAULT_GEMINI_MODEL = "gemini-3-pro-preview"
 
 
 def _response_schema_for_task(task: Task) -> dict[str, Any]:
@@ -78,7 +84,10 @@ class GeminiBackend(BaseBackend):
         max_output_tokens: optional cap for generated tokens
         api_key: optional Gemini API key; falls back to ``GEMINI_API_KEY``
         client: optional pre-built ``google.genai.Client`` for injection/tests
-        **kwargs: forwarded to ``genai.Client()`` when client is omitted
+        max_retries: number of retries after transient provider failures
+        retry_base_seconds: initial exponential-backoff delay
+        retry_max_seconds: maximum exponential-backoff delay
+        **client_kwargs: forwarded to ``genai.Client()`` when client is omitted
     """
 
     def __init__(
@@ -121,7 +130,9 @@ class GeminiBackend(BaseBackend):
         return f"gemini:{self._model}"
 
     def evaluate(self, record: PatientRecord, task: Task) -> BackendResponse:
-        system, contents = _split_system_and_user(build_messages(record, task))
+        prompt_messages = build_messages(record, task)
+        prompt = format_messages_for_audit(prompt_messages)
+        system, contents = _split_system_and_user(prompt_messages)
         response = self._generate_content(
             contents=contents,
             schema=_response_schema_for_task(task),
@@ -130,7 +141,14 @@ class GeminiBackend(BaseBackend):
         )
         raw = _extract_text(response)
         if not raw:
-            raise ValueError(f"{self.name} returned an empty response.")
+            raise ValueError(
+                empty_response_message(
+                    self.name,
+                    token_cap_name="max_output_tokens",
+                    mode="single",
+                    finish_reason=_gemini_finish_reason(response),
+                )
+            )
         parsed = parse_model_response(raw, task)
         if (
             parsed.prediction is None
@@ -146,6 +164,8 @@ class GeminiBackend(BaseBackend):
             abstained=parsed.abstained,
             confidence=parsed.confidence,
             raw_response=raw,
+            prompt=prompt,
+            prompt_mode="single",
             input_tokens=usage.input_tokens,
             output_tokens=usage.output_tokens,
             total_tokens=usage.total_tokens,
@@ -159,7 +179,9 @@ class GeminiBackend(BaseBackend):
         if not records:
             return []
 
-        system, contents = _split_system_and_user(build_batch_messages(records, task))
+        prompt_messages = build_batch_messages(records, task)
+        prompt = format_messages_for_audit(prompt_messages)
+        system, contents = _split_system_and_user(prompt_messages)
         max_output_tokens = (
             self._max_output_tokens * len(records)
             if self._max_output_tokens is not None
@@ -172,7 +194,17 @@ class GeminiBackend(BaseBackend):
             max_output_tokens=max_output_tokens,
         )
         raw = _extract_text(response)
+        if not raw:
+            raise ValueError(
+                empty_response_message(
+                    self.name,
+                    token_cap_name="max_output_tokens",
+                    mode="batch",
+                    finish_reason=_gemini_finish_reason(response),
+                )
+            )
         responses = parse_batch_response(raw, task, len(records))
+        attach_prompt_metadata(responses, prompt=prompt, prompt_mode="batch")
         usage = usage_from_gemini_response(response)
         return distribute_usage_over_batch(responses, usage)
 
@@ -220,3 +252,11 @@ def make_gemini_backend(
         api_key=api_key,
         **kwargs,
     )
+
+
+def _gemini_finish_reason(response: Any) -> str | None:
+    candidates = getattr(response, "candidates", None) or []
+    if not candidates:
+        return None
+    finish_reason = getattr(candidates[0], "finish_reason", None)
+    return str(finish_reason) if finish_reason is not None else None

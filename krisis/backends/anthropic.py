@@ -8,8 +8,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from krisis.backends.base import BackendResponse, BaseBackend
+from krisis.backends.base import (
+    BackendResponse,
+    BaseBackend,
+    empty_response_message,
+    format_messages_for_audit,
+)
 from krisis.backends.batching import (
+    attach_prompt_metadata,
     build_batch_messages,
     distribute_usage_over_batch,
     parse_batch_response,
@@ -67,7 +73,10 @@ class AnthropicBackend(BaseBackend):
         max_tokens: cap for generated tokens
         api_key: optional Anthropic API key; falls back to environment variables
         client: optional pre-built ``anthropic.Anthropic`` client for tests
-        **kwargs: forwarded to ``Anthropic()`` when client is omitted
+        max_retries: number of retries after transient provider failures
+        retry_base_seconds: initial exponential-backoff delay
+        retry_max_seconds: maximum exponential-backoff delay
+        **client_kwargs: forwarded to ``Anthropic()`` when client is omitted
     """
 
     def __init__(
@@ -108,7 +117,9 @@ class AnthropicBackend(BaseBackend):
         return f"anthropic:{self._model}"
 
     def evaluate(self, record: PatientRecord, task: Task) -> BackendResponse:
-        system, messages = _split_system_and_messages(build_messages(record, task))
+        prompt_messages = build_messages(record, task)
+        prompt = format_messages_for_audit(prompt_messages)
+        system, messages = _split_system_and_messages(prompt_messages)
         request: dict[str, Any] = {
             "model": self._model,
             "max_tokens": self._max_tokens,
@@ -127,7 +138,14 @@ class AnthropicBackend(BaseBackend):
         )
         raw = _extract_text(response)
         if not raw:
-            raise ValueError(f"{self.name} returned an empty response.")
+            raise ValueError(
+                empty_response_message(
+                    self.name,
+                    token_cap_name="max_tokens",
+                    mode="single",
+                    finish_reason=getattr(response, "stop_reason", None),
+                )
+            )
         parsed = parse_model_response(raw, task)
         if (
             parsed.prediction is None
@@ -143,6 +161,8 @@ class AnthropicBackend(BaseBackend):
             abstained=parsed.abstained,
             confidence=parsed.confidence,
             raw_response=raw,
+            prompt=prompt,
+            prompt_mode="single",
             input_tokens=usage.input_tokens,
             output_tokens=usage.output_tokens,
             total_tokens=usage.total_tokens,
@@ -156,9 +176,9 @@ class AnthropicBackend(BaseBackend):
         if not records:
             return []
 
-        system, messages = _split_system_and_messages(
-            build_batch_messages(records, task)
-        )
+        prompt_messages = build_batch_messages(records, task)
+        prompt = format_messages_for_audit(prompt_messages)
+        system, messages = _split_system_and_messages(prompt_messages)
         request: dict[str, Any] = {
             "model": self._model,
             "max_tokens": self._max_tokens * len(records),
@@ -176,7 +196,17 @@ class AnthropicBackend(BaseBackend):
             max_delay_seconds=self._retry_max_seconds,
         )
         raw = _extract_text(response)
+        if not raw:
+            raise ValueError(
+                empty_response_message(
+                    self.name,
+                    token_cap_name="max_tokens",
+                    mode="batch",
+                    finish_reason=getattr(response, "stop_reason", None),
+                )
+            )
         responses = parse_batch_response(raw, task, len(records))
+        attach_prompt_metadata(responses, prompt=prompt, prompt_mode="batch")
         usage = usage_from_anthropic_response(response)
         return distribute_usage_over_batch(responses, usage)
 

@@ -98,6 +98,9 @@ dev = [
     "ruff>=0.4.0",
     "mypy>=1.10.0",
     "pandas-stubs>=2.0.0",
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.0.0,<10.0.0",
+    "mkdocstrings[python]>=0.30.0,<2.0.0",
 ]
 
 [project.urls]

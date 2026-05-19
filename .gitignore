@@ -7,6 +7,7 @@ __pycache__/
 .ruff_cache/
 .pytest_cache/
 dist/
+site/
 *.egg-info/
 datasets/ckd/*.csv
 datasets/hypertension/*.csv

@@ -150,10 +150,12 @@ class CKDGenerator(BaseGenerator):
     then generates new synthetic patients that are physiologically plausible
     and stage-consistent.
 
-    Usage:
+    Example:
+        ```python
         generator = CKDGenerator(seed=42)
         generator.fit(df_engineered)
         synthetic_df = generator.generate(n=200)
+        ```
 
     The generated DataFrame has the same schema as the input to fit():
     ALL_FEATURES columns + 'class', 'sex', 'egfr', 'ckd_stage'.
