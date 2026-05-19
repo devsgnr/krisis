@@ -30,6 +30,9 @@ jobs:
       - name: Install docs dependencies
         run: python -m pip install ".[dev]"
 
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
       - name: Build docs
         run: mkdocs build --strict
 
