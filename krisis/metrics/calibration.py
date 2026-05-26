@@ -44,7 +44,7 @@ class ExpectedCalibrationError(BaseMetric):
     confidence), returns NaN.
     """
 
-    name = "Expected Calibration Error"
+    name = "expected_calibration_error"
 
     def __init__(self, n_bins: int = 15) -> None:
         if n_bins < 2:
@@ -159,7 +159,7 @@ class BrierScore(BaseMetric):
     Lower is better. Abstentions are excluded.
     """
 
-    name = "Brier Score"
+    name = "brier_score"
 
     def compute(self, results: list[EvaluationResult]) -> MetricScore:
         n_abs = sum(1 for r in results if r.abstained)

@@ -5,11 +5,8 @@ from __future__ import annotations
 import argparse
 import os
 
-from krisis.backends.anthropic import DEFAULT_ANTHROPIC_MODEL, AnthropicBackend
+from krisis.backends.api import DEFAULT_API_MODEL, APIBackend
 from krisis.backends.base import BaseBackend
-from krisis.backends.gemini import DEFAULT_GEMINI_MODEL, GeminiBackend
-from krisis.backends.grok import DEFAULT_GROK_MODEL, GrokBackend
-from krisis.backends.openai import DEFAULT_OPENAI_MODEL, OpenAIBackend
 from krisis.benchmark import Benchmark
 from krisis.data.base import FeatureSet, SuiteConfig, Task
 from krisis.data.ckd.suite import CKDSuite
@@ -20,76 +17,39 @@ from krisis.results.report import (
 )
 
 
-def _build_backend(
-    provider: str,
+def _build_api_backend(
     model: str | None,
     api_key: str | None = None,
     max_output_tokens: int | None = None,
+    reasoning_effort: str | None = "low",
     max_retries: int = 2,
     retry_base_seconds: float = 0.5,
     retry_max_seconds: float = 8.0,
 ) -> BaseBackend:
-    if provider == "anthropic":
-        kwargs: dict[str, object] = {}
-        if max_output_tokens is not None:
-            kwargs["max_tokens"] = max_output_tokens
-        return AnthropicBackend(
-            model=model or DEFAULT_ANTHROPIC_MODEL,
-            api_key=api_key,
-            max_retries=max_retries,
-            retry_base_seconds=retry_base_seconds,
-            retry_max_seconds=retry_max_seconds,
-            **kwargs,
-        )
-    if provider == "openai":
-        kwargs = {}
-        if max_output_tokens is not None:
-            kwargs["max_completion_tokens"] = max_output_tokens
-        return OpenAIBackend(
-            model=model or DEFAULT_OPENAI_MODEL,
-            api_key=api_key,
-            max_retries=max_retries,
-            retry_base_seconds=retry_base_seconds,
-            retry_max_seconds=retry_max_seconds,
-            **kwargs,
-        )
-    if provider == "grok":
-        kwargs = {}
-        if max_output_tokens is not None:
-            kwargs["max_tokens"] = max_output_tokens
-        return GrokBackend(
-            model=model or DEFAULT_GROK_MODEL,
-            api_key=api_key,
-            max_retries=max_retries,
-            retry_base_seconds=retry_base_seconds,
-            retry_max_seconds=retry_max_seconds,
-            **kwargs,
-        )
-    if provider == "gemini":
-        kwargs = {}
-        if max_output_tokens is not None:
-            kwargs["max_output_tokens"] = max_output_tokens
-        return GeminiBackend(
-            model=model or DEFAULT_GEMINI_MODEL,
-            api_key=api_key,
-            max_retries=max_retries,
-            retry_base_seconds=retry_base_seconds,
-            retry_max_seconds=retry_max_seconds,
-            **kwargs,
-        )
-    raise ValueError(f"Unsupported backend provider: {provider}")
+    kwargs: dict[str, object] = {}
+    if max_output_tokens is not None:
+        kwargs["max_tokens"] = max_output_tokens
+    return APIBackend(
+        model=model or DEFAULT_API_MODEL,
+        api_key=api_key,
+        reasoning_effort=reasoning_effort,
+        max_retries=max_retries,
+        retry_base_seconds=retry_base_seconds,
+        retry_max_seconds=retry_max_seconds,
+        **kwargs,
+    )
 
 
 def run_ckd_benchmark(
     *,
     task: Task,
-    backend_provider: str,
     model: str | None,
     api_key: str | None,
     max_retries: int,
     retry_base_seconds: float,
     retry_max_seconds: float,
     max_output_tokens: int | None,
+    reasoning_effort: str | None,
     limit: int | None,
     n_synthetic: int,
     features: FeatureSet,
@@ -100,11 +60,11 @@ def run_ckd_benchmark(
     metrics_only: bool = False,
     include_results: bool = False,
 ) -> None:
-    backend = _build_backend(
-        backend_provider,
+    backend = _build_api_backend(
         model,
         api_key=api_key,
         max_output_tokens=max_output_tokens,
+        reasoning_effort=reasoning_effort,
         max_retries=max_retries,
         retry_base_seconds=retry_base_seconds,
         retry_max_seconds=retry_max_seconds,
@@ -138,27 +98,17 @@ def run_ckd_benchmark(
 def build_ckd_parser(description: str) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        "--backend",
-        choices=["openai", "anthropic", "grok", "gemini"],
-        default="openai",
-        help="Model provider backend. Defaults to openai.",
-    )
-    parser.add_argument(
         "--model",
         default=None,
         help=(
-            "Provider model id. Defaults to gpt-5.5 for OpenAI, "
-            "claude-opus-4-7 for Anthropic, grok-4.3 for Grok, and "
-            "gemini-3-pro-preview for Gemini."
+            "OpenRouter model id. Defaults to openai/gpt-5.5. Examples: "
+            "anthropic/claude-4.7-opus, x-ai/grok-4.3, google/gemini-3.5-flash."
         ),
     )
     parser.add_argument(
         "--api-key",
         default=None,
-        help=(
-            "Provider API key. Defaults to API_KEY, then the provider SDK's "
-            "native environment variables."
-        ),
+        help=("OpenRouter API key. Defaults to OPENROUTER_API_KEY when omitted."),
     )
     parser.add_argument(
         "--data-path",
@@ -188,10 +138,18 @@ def build_ckd_parser(description: str) -> argparse.ArgumentParser:
         type=int,
         default=None,
         help=(
-            "Optional per-row output token cap. Maps to max_completion_tokens "
-            "for OpenAI, max_tokens for Anthropic/Grok, and max_output_tokens "
-            "for Gemini. Increase this when a provider returns empty or "
-            "truncated JSON."
+            "Optional per-row output token cap. Increase this when a model "
+            "returns empty or truncated JSON."
+        ),
+    )
+    parser.add_argument(
+        "--reasoning-effort",
+        dest="reasoning_effort",
+        choices=["omit", "none", "minimal", "low", "medium", "high", "xhigh"],
+        default="low",
+        help=(
+            "Reasoning effort for supported API models. Defaults to low. Use "
+            "omit to leave it unset."
         ),
     )
     parser.add_argument(
@@ -246,13 +204,15 @@ def run_ckd_task(task: Task, description: str) -> None:
 
     run_ckd_benchmark(
         task=task,
-        backend_provider=args.backend,
         model=args.model,
         api_key=args.api_key or os.getenv("API_KEY"),
         max_retries=args.max_retries,
         retry_base_seconds=args.retry_base_seconds,
         retry_max_seconds=args.retry_max_seconds,
         max_output_tokens=args.max_output_tokens,
+        reasoning_effort=None
+        if args.reasoning_effort == "omit"
+        else args.reasoning_effort,
         limit=args.limit,
         n_synthetic=args.n_synthetic,
         features=FeatureSet(args.features),

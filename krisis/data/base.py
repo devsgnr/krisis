@@ -9,12 +9,12 @@ inherit from these contracts.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
 import numpy as np
 import pandas as pd
+from pydantic import BaseModel, Field, field_validator
 
 # ── Enums ─────────────────────────────────────────────────────────────────────
 
@@ -60,8 +60,7 @@ class Task(str, Enum):
 # ── Data classes ──────────────────────────────────────────────────────────────
 
 
-@dataclass
-class PatientRecord:
+class PatientRecord(BaseModel):
     """
     A single patient record passed to a model backend for evaluation.
 
@@ -81,11 +80,10 @@ class PatientRecord:
 
     features: dict[str, Any]
     label: int | str
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
-@dataclass
-class SuiteConfig:
+class SuiteConfig(BaseModel):
     """
     Configuration passed to a BaseDataSuite at instantiation.
 
@@ -103,6 +101,20 @@ class SuiteConfig:
     seed: int = 42
     n_synthetic: int = 200
     test_size: float = 0.2
+
+    @field_validator("n_synthetic")
+    @classmethod
+    def _validate_n_synthetic(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("n_synthetic must be greater than or equal to 0.")
+        return value
+
+    @field_validator("test_size")
+    @classmethod
+    def _validate_test_size(cls, value: float) -> float:
+        if not 0 < value < 1:
+            raise ValueError("test_size must be between 0 and 1.")
+        return value
 
 
 # ── Abstract base classes ─────────────────────────────────────────────────────

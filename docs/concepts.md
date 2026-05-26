@@ -72,8 +72,8 @@ BackendResponse(
 helps compare model behavior when one provider follows batched JSON instructions
 better than another, without duplicating clinical row data inside every result.
 
-This standard shape lets the same benchmark compare OpenAI, Anthropic, Grok,
-and Gemini.
+This standard shape lets the same benchmark compare models routed through the
+same API backend.
 
 ## Benchmark
 
@@ -96,7 +96,7 @@ It handles:
     evaluation, preserving benchmark progress while still using batching when
     it works.
 
-    In practice, this has shown up with `gpt-5.5` when the OpenAI
+    In practice, this has shown up with `openai/gpt-5.5` when the OpenAI
     `max_completion_tokens` cap is too low: the provider can return an empty or
     incomplete JSON response before the model finishes. Krisis now uses a higher
     OpenAI default.

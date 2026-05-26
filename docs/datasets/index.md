@@ -13,7 +13,7 @@ claims are valid, and where synthetic stress tests begin.
 
 | Dataset | Status | Used by | Supported tasks |
 |---|---|---|---|
-| [CKD Dataset](ckd.md) | Available in v0.1 | `CKDSuite` | detection, staging, synthetic progression |
+| [CKD Dataset](ckd.md) | Available in v0.2 | `CKDSuite` | detection, staging, synthetic progression |
 | [Diabetes](diabetes.md) | Coming soon | Not available yet | Not available yet |
 | [Hypertension](hypertension.md) | Coming soon | Not available yet | Not available yet |
 
@@ -52,7 +52,7 @@ Each Krisis dataset page should make these points explicit:
 ## Real Data And Synthetic Stress Cases
 
 Krisis can use real rows and synthetic stress cases in the same evaluation set.
-For CKD v0.1:
+For CKD v0.2:
 
 - the real rows come from the UCI CKD dataset
 - `n_synthetic` controls completely synthetic patient rows generated from the

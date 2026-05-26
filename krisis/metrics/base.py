@@ -15,14 +15,14 @@ compute(). Nothing else needs to change in the harness.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
 from typing import Any
+
+from pydantic import BaseModel, Field
 
 # ── EvaluationResult ──────────────────────────────────────────────────────────
 
 
-@dataclass
-class EvaluationResult:
+class EvaluationResult(BaseModel):
     """
     A single model evaluation result for one PatientRecord.
 
@@ -60,23 +60,35 @@ class EvaluationResult:
     abstained: bool = False
     confidence: float | None = None
     raw_response: str = ""
-    prompt: list[dict[str, str]] = field(default_factory=list)
+    prompt: list[dict[str, str]] = Field(default_factory=list)
     prompt_mode: str = ""
-    metadata: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
     input_tokens: float | None = None
     output_tokens: float | None = None
     total_tokens: float | None = None
+
+    def __init__(self, *args: Any, **data: Any) -> None:
+        """Preserve the old positional ``(prediction, ground_truth)`` API."""
+        if len(args) > 2:
+            raise TypeError(
+                "EvaluationResult accepts at most two positional arguments: "
+                "prediction and ground_truth."
+            )
+        if args:
+            data["prediction"] = args[0]
+        if len(args) == 2:
+            data["ground_truth"] = args[1]
+        super().__init__(**data)
 
 
 # ── MetricScore ───────────────────────────────────────────────────────────────
 
 
-@dataclass
-class MetricScore:
+class MetricScore(BaseModel):
     """
     The result of computing a metric across all EvaluationResults.
 
-    name        — metric name, e.g. 'Abstention Rate', 'Accuracy'
+    name        — machine-readable metric key, e.g. 'abstention_rate'
 
     value       — the primary scalar score.
                   Interpretation depends on metric:
@@ -100,10 +112,10 @@ class MetricScore:
 
     name: str
     value: float
-    breakdown: dict[str, float] = field(default_factory=dict)
+    breakdown: dict[str, float] = Field(default_factory=dict)
     n_evaluated: int = 0
     n_abstained: int = 0
-    details: dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = Field(default_factory=dict)
 
     def __repr__(self) -> str:
         return (
@@ -130,7 +142,7 @@ class BaseMetric(ABC):
         score = metric(results)   # calls compute() via __call__
     """
 
-    #: Human-readable metric name. Must be set by subclasses.
+    #: Machine-readable metric key. Must be set by subclasses.
     name: str = "BaseMetric"
 
     @abstractmethod

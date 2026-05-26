@@ -1,8 +1,8 @@
-"""Run any CKD benchmark task with the OpenAI backend.
+"""Run any CKD benchmark task with the API backend.
 
 Usage:
-    OPENAI_API_KEY=... python examples/basic_ckd_eval.py
-    OPENAI_API_KEY=... python examples/basic_ckd_eval.py --limit 10
+    OPENROUTER_API_KEY=... python examples/basic_ckd_eval.py
+    OPENROUTER_API_KEY=... python examples/basic_ckd_eval.py --limit 10
 
 Dedicated entrypoints are also available:
     python examples/ckd_detection.py
@@ -20,7 +20,7 @@ from krisis.data.base import FeatureSet, Task
 
 
 def main() -> None:
-    parser = build_ckd_parser("Run a CKD OpenAI benchmark.")
+    parser = build_ckd_parser("Run a CKD benchmark.")
     parser.add_argument(
         "--task", choices=[t.value for t in Task], default=Task.DETECTION.value
     )
@@ -28,13 +28,15 @@ def main() -> None:
 
     run_ckd_benchmark(
         task=Task(args.task),
-        backend_provider=args.backend,
         model=args.model,
         api_key=args.api_key or os.getenv("API_KEY"),
         max_retries=args.max_retries,
         retry_base_seconds=args.retry_base_seconds,
         retry_max_seconds=args.retry_max_seconds,
         max_output_tokens=args.max_output_tokens,
+        reasoning_effort=None
+        if args.reasoning_effort == "omit"
+        else args.reasoning_effort,
         limit=args.limit,
         n_synthetic=args.n_synthetic,
         features=FeatureSet(args.features),

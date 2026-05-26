@@ -4,7 +4,7 @@
 Disease dataset.
 
 !!! warning "UCI schema only"
-    For v0.1, `CKDSuite` expects the UCI CKD schema only. Do not pass arbitrary
+    For v0.2, `CKDSuite` expects the UCI CKD schema only. Do not pass arbitrary
     CKD exports, EHR tables, or custom clinical CSVs directly into this suite
     unless they have first been mapped into the UCI CKD column schema and value
     conventions.

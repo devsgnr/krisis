@@ -1,6 +1,6 @@
 # Research Status
 
-Krisis v0.1 is an early evaluation framework for testing LLMs on clinical
+Krisis v0.2 is an early evaluation framework for testing LLMs on clinical
 reasoning tasks. It is useful for testing safety-relevant model behavior, but it
 should be reported with clear scope and limitations.
 
@@ -11,7 +11,7 @@ should be reported with clear scope and limitations.
 
 ## What Is Implemented
 
-Krisis v0.1 includes:
+Krisis v0.2 includes:
 
 | Area | Status |
 |---|---|
@@ -19,10 +19,7 @@ Krisis v0.1 includes:
 | Detection task | Implemented |
 | Staging task | Implemented using eGFR-derived CKD stage |
 | Progression task | Implemented as synthetic stress test |
-| OpenAI backend | Implemented |
-| Anthropic backend | Implemented |
-| Grok backend | Implemented |
-| Gemini backend | Implemented |
+| API backend | Implemented through OpenRouter-routed model IDs |
 | Batching and concurrency | Implemented |
 | Retry and fallback behavior | Implemented |
 | Abstention-aware metrics | Implemented |
@@ -31,7 +28,7 @@ Krisis v0.1 includes:
 
 ## What Is Not Claimed
 
-Krisis v0.1 does not claim:
+Krisis v0.2 does not claim:
 
 - clinical deployment readiness
 - diagnostic approval
@@ -96,7 +93,7 @@ When reporting Krisis results, include:
 A careful preprint should frame Krisis as:
 
 - a clinical evaluation framework
-- a CKD v0.1 benchmark suite
+- a CKD v0.2 benchmark suite
 - an abstention and deferral evaluation tool
 - an early research artifact with documented limitations
 

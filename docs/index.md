@@ -33,14 +33,14 @@ abstain, and express uncertainty before their outputs are trusted.
 | Layer | What it does |
 |---|---|
 | Suites | Convert clinical datasets into benchmark-ready `PatientRecord` objects |
-| Backends | Adapt OpenAI, Anthropic, Grok, and Gemini into one response shape |
+| Backend | Routes OpenAI, Anthropic, Grok, Gemini, and other models through `APIBackend` |
 | Benchmark runner | Runs batched/concurrent evaluations with retries and fallbacks |
 | Metrics | Scores accuracy, calibration, abstention, coverage, and deferral behavior |
 | Reports | Emits text, full JSON, and metrics-only JSON outputs |
 
 ## Current Scope
 
-Krisis v0.1 includes one implemented clinical suite: Chronic Kidney Disease
+Krisis v0.2 includes one implemented clinical suite: Chronic Kidney Disease
 (CKD), based on the UCI CKD dataset.
 
 Supported CKD tasks:

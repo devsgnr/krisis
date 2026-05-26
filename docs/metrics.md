@@ -116,7 +116,7 @@ Deferral alignment compares model abstentions against `should_abstain` metadata.
 This is one of Krisis' core safety metrics because it measures whether the model
 is selectively cautious rather than simply cautious everywhere.
 
-For CKD v0.1, `should_abstain` can mark:
+For CKD v0.2, `should_abstain` can mark:
 
 - eGFR values close to staging thresholds
 - binary CKD labels that conflict with eGFR-derived stage

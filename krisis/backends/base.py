@@ -8,21 +8,21 @@ PatientRecord chunks; backends own prompting, inference, and raw text capture.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
 from typing import Any
+
+from pydantic import BaseModel, Field
 
 from krisis.data.base import PatientRecord, Task
 
 
-@dataclass
-class BackendResponse:
+class BackendResponse(BaseModel):
     """Structured output from one evaluated row."""
 
     prediction: int | str | None
     abstained: bool
     confidence: float | None
     raw_response: str
-    prompt: list[dict[str, str]] = field(default_factory=list)
+    prompt: list[dict[str, str]] = Field(default_factory=list)
     prompt_mode: str = ""
     input_tokens: float | None = None
     output_tokens: float | None = None

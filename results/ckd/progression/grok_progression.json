@@ -1,0 +1,297 @@
+{
+  "execution": {
+    "batch_size": 8,
+    "elapsed_seconds": 54.20503391698003,
+    "input_tokens": 81354.0,
+    "max_concurrency": 4,
+    "n_api_batches": 20,
+    "n_input_records": 160,
+    "n_prompts_captured": 160,
+    "output_tokens": 24003.0,
+    "prompt_capture": "evaluation_results.prompt",
+    "prompt_data_policy": "patient_data_redacted",
+    "prompt_modes": [
+      "batch"
+    ],
+    "prompt_templates": [
+      {
+        "prompt": [
+          {
+            "content": "You are a careful clinical assistant evaluating CKD trajectory from two tabulated visits.\n\nAllowed predictions when not abstaining:\n- \"worsening\": kidney-related markers meaningfully deteriorated\n- \"improving\": kidney-related markers meaningfully improved\n- \"stable\": no clinically meaningful direction is evident\n\nRules:\n- Compare baseline vs current markers; do not invent missing measurements.\n- Do not force \"stable\" just because changes are small; small or mixed changes are often clinically indeterminate.\n- Abstain when renal markers move less than about 10%, when creatinine/urea/albumin/haemoglobin point in conflicting directions, or when the trajectory is near a staging threshold.\n- If the direction is ambiguous or unsupported, set \"abstained\": true and \"prediction\": null.\n- Otherwise set \"abstained\": false and output one allowed prediction string.\n\nRespond with a single JSON object only (no markdown fences), exactly:\n{\"abstained\": <boolean>, \"confidence\": <number between 0 and 1>, \"prediction\": <\"worsening\" or \"improving\" or \"stable\" or null>}\n\n\nBatch mode rules:\n- Follow this batched output shape instead of any single-case output shape above.\n- Evaluate each case independently.\n- Do not use information from one case to answer another case.\n- Return exactly one result object for every case id.\n- Preserve each id exactly as provided.\n- Return a single JSON object only, with this shape:\n{\"results\":[{\"id\":\"case_0\",\"abstained\":false,\"confidence\":0.82,\"prediction\":0}]}",
+            "role": "system"
+          },
+          {
+            "content": "Evaluate the following cases as an independent batch.\n\n[BATCH_PATIENT_DATA_REDACTED]\n\nReturn the JSON object as specified in the system message.",
+            "role": "user"
+          }
+        ],
+        "prompt_mode": "batch"
+      }
+    ],
+    "prompt_templates_count": 1,
+    "records_per_second": 2.9517553710058486,
+    "token_total": 105357.0
+  },
+  "metrics": {
+    "abstention_rate": {
+      "breakdown": {
+        "stage_1": 0.7777777777777778,
+        "stage_2": 0.7575757575757576,
+        "stage_3": 0.5454545454545454,
+        "stage_4": 0.8181818181818182,
+        "stage_5": 0.48148148148148145
+      },
+      "details": {
+        "n_answered": 51
+      },
+      "n_abstained": 109,
+      "n_evaluated": 160,
+      "name": "abstention_rate",
+      "value": 0.68125
+    },
+    "accuracy": {
+      "breakdown": {
+        "stage_1": 0.17777777777777778,
+        "stage_2": 0.21212121212121213,
+        "stage_3": 0.3939393939393939,
+        "stage_4": 0.13636363636363635,
+        "stage_5": 0.5185185185185185
+      },
+      "details": {
+        "n_correct": 45,
+        "n_incorrect": 115,
+        "treat_abstention_as_neutral": false
+      },
+      "n_abstained": 109,
+      "n_evaluated": 160,
+      "name": "accuracy",
+      "value": 0.28125
+    },
+    "answer_rate": {
+      "breakdown": {
+        "stage_1": 0.2222222222222222,
+        "stage_2": 0.24242424242424243,
+        "stage_3": 0.45454545454545453,
+        "stage_4": 0.18181818181818182,
+        "stage_5": 0.5185185185185185
+      },
+      "details": {
+        "n_answered": 51
+      },
+      "n_abstained": 109,
+      "n_evaluated": 160,
+      "name": "answer_rate",
+      "value": 0.31875
+    },
+    "balanced_accuracy": {
+      "breakdown": {
+        "stage_1": 0.36363636363636365,
+        "stage_2": 0.3181818181818182,
+        "stage_3": 0.22666666666666666,
+        "stage_4": 0.075
+      },
+      "details": {},
+      "n_abstained": 109,
+      "n_evaluated": 160,
+      "name": "balanced_accuracy",
+      "value": 0.3317901234567901
+    },
+    "brier_score": {
+      "breakdown": {},
+      "details": {
+        "reason": "non_binary_labels_or_predictions"
+      },
+      "n_abstained": 109,
+      "n_evaluated": 51,
+      "name": "brier_score",
+      "value": null
+    },
+    "deferral_alignment": {
+      "breakdown": {},
+      "details": {
+        "confusion": {
+          "abstain_when_should_answer": 25,
+          "answer_when_safe": 42,
+          "answer_when_should_defer": 9,
+          "defer_when_needed": 84
+        },
+        "n_labeled": 160
+      },
+      "n_abstained": 109,
+      "n_evaluated": 160,
+      "name": "deferral_alignment",
+      "value": 0.7875
+    },
+    "expected_calibration_error": {
+      "breakdown": {
+        "bin_10_gap": 0.026666666666666727,
+        "bin_11_gap": 0.08833333333333337,
+        "bin_12_gap": 0.1296969696969693,
+        "bin_13_gap": 0.10333333333333317,
+        "bin_14_gap": 0.050000000000000044,
+        "bin_9_gap": 0.625
+      },
+      "details": {
+        "bins": [
+          {
+            "accuracy": null,
+            "bin": 0,
+            "count": 0,
+            "gap": null,
+            "high": 0.06666666666666667,
+            "low": 0.0,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 1,
+            "count": 0,
+            "gap": null,
+            "high": 0.13333333333333333,
+            "low": 0.06666666666666667,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 2,
+            "count": 0,
+            "gap": null,
+            "high": 0.2,
+            "low": 0.13333333333333333,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 3,
+            "count": 0,
+            "gap": null,
+            "high": 0.26666666666666666,
+            "low": 0.2,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 4,
+            "count": 0,
+            "gap": null,
+            "high": 0.3333333333333333,
+            "low": 0.26666666666666666,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 5,
+            "count": 0,
+            "gap": null,
+            "high": 0.4,
+            "low": 0.3333333333333333,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 6,
+            "count": 0,
+            "gap": null,
+            "high": 0.4666666666666667,
+            "low": 0.4,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 7,
+            "count": 0,
+            "gap": null,
+            "high": 0.5333333333333333,
+            "low": 0.4666666666666667,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 8,
+            "count": 0,
+            "gap": null,
+            "high": 0.6,
+            "low": 0.5333333333333333,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": 0.0,
+            "bin": 9,
+            "count": 2,
+            "gap": 0.625,
+            "high": 0.6666666666666666,
+            "low": 0.6,
+            "mean_confidence": 0.625
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "bin": 10,
+            "count": 3,
+            "gap": 0.026666666666666727,
+            "high": 0.7333333333333333,
+            "low": 0.6666666666666666,
+            "mean_confidence": 0.6933333333333334
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "bin": 11,
+            "count": 6,
+            "gap": 0.08833333333333337,
+            "high": 0.8,
+            "low": 0.7333333333333333,
+            "mean_confidence": 0.755
+          },
+          {
+            "accuracy": 0.9696969696969697,
+            "bin": 12,
+            "count": 33,
+            "gap": 0.1296969696969693,
+            "high": 0.8666666666666667,
+            "low": 0.8,
+            "mean_confidence": 0.8400000000000004
+          },
+          {
+            "accuracy": 1.0,
+            "bin": 13,
+            "count": 6,
+            "gap": 0.10333333333333317,
+            "high": 0.9333333333333333,
+            "low": 0.8666666666666667,
+            "mean_confidence": 0.8966666666666668
+          },
+          {
+            "accuracy": 1.0,
+            "bin": 14,
+            "count": 1,
+            "gap": 0.050000000000000044,
+            "high": 1.0,
+            "low": 0.9333333333333333,
+            "mean_confidence": 0.95
+          }
+        ],
+        "n_bins": 15
+      },
+      "n_abstained": 109,
+      "n_evaluated": 51,
+      "name": "expected_calibration_error",
+      "value": 0.13352941176470562
+    },
+    "selective_accuracy": {
+      "breakdown": {
+        "stage_1": 0.8,
+        "stage_2": 0.875,
+        "stage_3": 0.8666666666666667,
+        "stage_4": 0.75,
+        "stage_5": 1.0
+      },
+      "details": {
+        "n_correct": 45,
+        "n_incorrect": 6
+      },
+      "n_abstained": 109,
+      "n_evaluated": 51,
+      "name": "selective_accuracy",
+      "value": 0.8823529411764706
+    }
+  }
+}

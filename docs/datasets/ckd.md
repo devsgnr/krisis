@@ -79,7 +79,7 @@ Krisis engineers CKD features using explicit, documented clinical criteria:
 - The benchmark is not clinical validation for patient care.
 
 !!! danger "Do not overclaim"
-    Krisis v0.1 evaluates LLM behavior on a CKD benchmark derived from UCI data.
+    Krisis v0.2 evaluates LLM behavior on a CKD benchmark derived from UCI data.
     It does not prove clinical safety, diagnostic performance, or real-world
     deployment readiness.
 

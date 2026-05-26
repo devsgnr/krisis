@@ -1,7 +1,7 @@
 """
-krisis/backends/grok.py
+krisis/backends/api.py
 
-xAI Grok backend using the OpenAI-compatible Chat Completions API.
+Unified API backend for model-provider routing through OpenRouter.
 """
 
 from __future__ import annotations
@@ -29,8 +29,9 @@ from krisis.data.base import PatientRecord, Task
 from krisis.prompts.base import build_messages
 from krisis.tasks.base import parse_model_response
 
-DEFAULT_GROK_MODEL = "grok-4.3"
-DEFAULT_XAI_BASE_URL = "https://api.x.ai/v1"
+DEFAULT_API_MODEL = "openai/gpt-5.5"
+DEFAULT_API_BASE_URL = "https://openrouter.ai/api/v1"
+DEFAULT_REASONING_EFFORT = "low"
 
 
 def _response_format_for_task(task: Task) -> dict[str, Any]:
@@ -64,18 +65,23 @@ def _batch_response_format_for_task(task: Task) -> dict[str, Any]:
     }
 
 
-class GrokBackend(BaseBackend):
+class APIBackend(BaseBackend):
     """
-    xAI Grok Chat Completions API wrapper.
+    OpenRouter-backed API backend.
 
-    Requires the OpenAI SDK because xAI exposes an OpenAI-compatible endpoint.
+    OpenRouter exposes an OpenAI-compatible API, so Krisis can evaluate
+    OpenAI, Anthropic, xAI, Google, and other routed models by changing only
+    the model id, for example ``openai/gpt-5.5`` or
+    ``anthropic/claude-4.7-opus``.
 
     Args:
-        model: model id passed through to xAI
+        model: API model id routed through OpenRouter
         temperature: sampling temperature (0.0 recommended for evals)
-        max_tokens: optional cap for generated tokens
-        api_key: optional xAI API key; falls back to ``XAI_API_KEY``
-        base_url: xAI API base URL
+        max_tokens: optional per-row cap for generated tokens
+        reasoning_effort: reasoning effort; defaults to ``low``
+        exclude_reasoning: keep provider reasoning out of response text
+        api_key: optional key; falls back to ``OPENROUTER_API_KEY``
+        base_url: API base URL
         client: optional pre-built OpenAI-compatible client for tests
         max_retries: number of retries after transient provider failures
         retry_base_seconds: initial exponential-backoff delay
@@ -85,11 +91,13 @@ class GrokBackend(BaseBackend):
 
     def __init__(
         self,
-        model: str = DEFAULT_GROK_MODEL,
+        model: str = DEFAULT_API_MODEL,
         temperature: float | None = None,
-        max_tokens: int | None = 256,
+        max_tokens: int | None = 1024,
+        reasoning_effort: str | None = DEFAULT_REASONING_EFFORT,
+        exclude_reasoning: bool = True,
         api_key: str | None = None,
-        base_url: str = DEFAULT_XAI_BASE_URL,
+        base_url: str = DEFAULT_API_BASE_URL,
         client: Any | None = None,
         max_retries: int = 2,
         retry_base_seconds: float = 0.5,
@@ -103,12 +111,12 @@ class GrokBackend(BaseBackend):
                 from openai import OpenAI
             except ImportError as exc:  # pragma: no cover - env dependent
                 raise ImportError(
-                    "GrokBackend requires the openai package because xAI "
-                    "uses an OpenAI-compatible API. Install with: "
-                    "pip install 'krisis[grok]'"
+                    "APIBackend requires the openai package because "
+                    "OpenRouter exposes an OpenAI-compatible API. Install "
+                    "with: pip install 'krisis[api]'"
                 ) from exc
 
-            key = api_key or os.getenv("XAI_API_KEY")
+            key = api_key or os.getenv("OPENROUTER_API_KEY")
             if key is not None:
                 client_kwargs["api_key"] = key
             client_kwargs.setdefault("base_url", base_url)
@@ -117,26 +125,24 @@ class GrokBackend(BaseBackend):
         self._model = model
         self._temperature = temperature
         self._max_tokens = max_tokens
+        self._reasoning_effort = reasoning_effort
+        self._exclude_reasoning = exclude_reasoning
         self._max_retries = max_retries
         self._retry_base_seconds = retry_base_seconds
         self._retry_max_seconds = retry_max_seconds
 
     @property
     def name(self) -> str:
-        return f"grok:{self._model}"
+        return f"api:{self._model}"
 
     def evaluate(self, record: PatientRecord, task: Task) -> BackendResponse:
         messages = build_messages(record, task)
         prompt = format_messages_for_audit(messages)
-        request: dict[str, Any] = {
-            "model": self._model,
-            "messages": messages,
-            "response_format": _response_format_for_task(task),
-        }
-        if self._temperature is not None:
-            request["temperature"] = self._temperature
-        if self._max_tokens is not None:
-            request["max_tokens"] = self._max_tokens
+        request = self._request(
+            messages=messages,
+            response_format=_response_format_for_task(task),
+            max_tokens_multiplier=1,
+        )
 
         completion = call_with_retries(
             lambda: self._client.chat.completions.create(**request),
@@ -165,6 +171,7 @@ class GrokBackend(BaseBackend):
             raise ValueError(
                 f"{self.name} returned a non-JSON response that could not be parsed."
             )
+
         usage = usage_from_openai_compatible_response(completion)
         return BackendResponse(
             prediction=parsed.prediction,
@@ -185,18 +192,14 @@ class GrokBackend(BaseBackend):
     ) -> list[BackendResponse]:
         if not records:
             return []
+
         messages = build_batch_messages(records, task)
         prompt = format_messages_for_audit(messages)
-
-        request: dict[str, Any] = {
-            "model": self._model,
-            "messages": messages,
-            "response_format": _batch_response_format_for_task(task),
-        }
-        if self._temperature is not None:
-            request["temperature"] = self._temperature
-        if self._max_tokens is not None:
-            request["max_tokens"] = self._max_tokens * len(records)
+        request = self._request(
+            messages=messages,
+            response_format=_batch_response_format_for_task(task),
+            max_tokens_multiplier=len(records),
+        )
 
         completion = call_with_retries(
             lambda: self._client.chat.completions.create(**request),
@@ -216,17 +219,50 @@ class GrokBackend(BaseBackend):
                     finish_reason=getattr(choice_obj, "finish_reason", None),
                 )
             )
+
         responses = parse_batch_response(raw, task, len(records))
         attach_prompt_metadata(responses, prompt=prompt, prompt_mode="batch")
         usage = usage_from_openai_compatible_response(completion)
         return distribute_usage_over_batch(responses, usage)
 
+    def _request(
+        self,
+        *,
+        messages: list[dict[str, str]],
+        response_format: dict[str, Any],
+        max_tokens_multiplier: int,
+    ) -> dict[str, Any]:
+        request: dict[str, Any] = {
+            "model": self._model,
+            "messages": messages,
+            "response_format": response_format,
+        }
+        if self._temperature is not None:
+            request["temperature"] = self._temperature
+        if self._max_tokens is not None:
+            request["max_tokens"] = self._max_tokens * max_tokens_multiplier
+        if self._reasoning_effort is not None:
+            request["extra_body"] = {
+                "reasoning": {
+                    "effort": self._reasoning_effort,
+                    "exclude": self._exclude_reasoning,
+                }
+            }
+        return request
 
-def make_grok_backend(
-    model: str = DEFAULT_GROK_MODEL,
+
+def make_api_backend(
+    model: str = DEFAULT_API_MODEL,
     temperature: float | None = None,
+    reasoning_effort: str | None = DEFAULT_REASONING_EFFORT,
     api_key: str | None = None,
     **kwargs: Any,
-) -> GrokBackend:
-    """Convenience factory for xAI Grok setup."""
-    return GrokBackend(model=model, temperature=temperature, api_key=api_key, **kwargs)
+) -> APIBackend:
+    """Convenience factory for the default API backend setup."""
+    return APIBackend(
+        model=model,
+        temperature=temperature,
+        reasoning_effort=reasoning_effort,
+        api_key=api_key,
+        **kwargs,
+    )

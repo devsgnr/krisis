@@ -10,6 +10,21 @@ import math
 
 from krisis.results.result import BenchmarkResult
 
+METRIC_LABELS = {
+    "abstention_rate": "Abstention Rate",
+    "accuracy": "Accuracy",
+    "answer_rate": "Answer Rate (Coverage)",
+    "balanced_accuracy": "Balanced Accuracy",
+    "brier_score": "Brier Score",
+    "deferral_alignment": "Deferral Alignment",
+    "expected_calibration_error": "Expected Calibration Error",
+    "selective_accuracy": "Selective Accuracy (answered only)",
+}
+
+
+def _metric_label(name: str) -> str:
+    return METRIC_LABELS.get(name, name.replace("_", " ").title())
+
 
 def format_report(run: BenchmarkResult) -> str:
     """Return a compact multi-line text summary suitable for logs or papers."""
@@ -29,7 +44,7 @@ def format_report(run: BenchmarkResult) -> str:
         val = score.value
         val_s = "nan" if isinstance(val, float) and math.isnan(val) else f"{val:.4f}"
         lines.append(
-            f"  {name}: {val_s} "
+            f"  {_metric_label(name)}: {val_s} "
             f"(n_evaluated={score.n_evaluated}, n_abstained={score.n_abstained})"
         )
 

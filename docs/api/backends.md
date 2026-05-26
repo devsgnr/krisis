@@ -1,12 +1,10 @@
 # Backend
 
-The backend page defines the reusable interface that provider-specific backends
-implement.
+The backend page defines the reusable interface that model backends implement.
 
 !!! note "Provider implementations live in the guide"
-    The API reference focuses on the common backend contract. Provider-specific
-    usage for OpenAI, Anthropic, Grok, and Gemini is documented under Framework
-    Guide -> Model Backends.
+    The API reference focuses on the common backend contract and the primary
+    API backend. Usage is documented under Framework Guide -> Model Backends.
 
 ## Backend Base Classes
 
@@ -16,49 +14,53 @@ implement.
         - BackendResponse
         - BaseBackend
 
+## API Backend
+
+::: krisis.backends.api
+    options:
+      members:
+        - APIBackend
+        - make_api_backend
+
 ## Provider Backend Controls
 
-Concrete provider backends follow the same practical pattern even though each
-provider SDK has slightly different parameter names.
+The primary backend is `APIBackend`.
 
-| Control | OpenAI | Anthropic | Grok | Gemini | Purpose |
-|---|---|---|---|---|---|
-| `model` | yes | yes | yes | yes | Provider model ID |
-| `temperature` | yes | yes | yes | yes | Sampling temperature. `0.0` or `None` is recommended for evals |
-| token cap | `max_completion_tokens` | `max_tokens` | `max_tokens` | `max_output_tokens` | Caps generated output tokens |
-| `api_key` | yes | yes | yes | yes | Direct provider key override |
-| `client` | yes | yes | yes | yes | Prebuilt client for testing or custom setup |
-| `max_retries` | yes | yes | yes | yes | Number of retries after transient failures |
-| `retry_base_seconds` | yes | yes | yes | yes | Initial exponential-backoff delay |
-| `retry_max_seconds` | yes | yes | yes | yes | Maximum exponential-backoff delay |
+Get an API key from [OpenRouter](https://openrouter.ai/settings/keys), then set
+it as `OPENROUTER_API_KEY` or pass it through the `api_key` parameter.
 
-Default token caps are intentionally conservative for most providers. OpenAI
-defaults to `max_completion_tokens=1024` per row because larger reasoning models
-can spend part of the completion budget before producing the visible JSON.
+| Control | Default | Purpose |
+|---|---|---|
+| `model` | `openai/gpt-5.5` | OpenRouter-routed model ID |
+| `temperature` | `None` | Sampling temperature. `0.0` or `None` is recommended for evals |
+| `max_tokens` | `1024` | Per-row output token cap |
+| `reasoning_effort` | `low` | Reasoning effort for supported models |
+| `exclude_reasoning` | `True` | Uses reasoning internally but keeps reasoning text out of parsed output |
+| `api_key` | `OPENROUTER_API_KEY` | Direct key override or environment fallback |
+| `base_url` | `https://openrouter.ai/api/v1` | API base URL |
+| `client` | `None` | Prebuilt OpenAI-compatible client for testing or custom setup |
+| `max_retries` | `2` | Number of retries after transient failures |
+| `retry_base_seconds` | `0.5` | Initial exponential-backoff delay |
+| `retry_max_seconds` | `8.0` | Maximum exponential-backoff delay |
+
+Default token caps are intentionally conservative. `APIBackend` defaults to
+`1024` output tokens per row because larger reasoning models can spend part of
+the completion budget before producing the visible JSON.
 
 Example:
 
 ```python
-backend = OpenAIBackend(
-    model="provider-model-id",
-    api_key="YOUR_API_KEY",
+backend = APIBackend(
+    model="openai/gpt-5.5",
+    api_key="YOUR_OPENROUTER_API_KEY",
     temperature=0.0,
-    max_completion_tokens=1024,
+    max_tokens=1024,
+    reasoning_effort="low",
     max_retries=2,
     retry_base_seconds=0.5,
     retry_max_seconds=8.0,
 )
 ```
-
-!!! note "Provider naming differs"
-    `max_completion_tokens` is the OpenAI name. Anthropic and Grok use
-    `max_tokens`; Gemini uses `max_output_tokens`. The example CLI exposes one
-    provider-agnostic flag, `--max-output-tokens`, and maps it to the correct
-    backend setting.
-
-!!! note "Actual provider classes"
-    Provider-specific setup examples live in Framework Guide -> Model Backends.
-    The API Reference keeps the focus on the shared backend shape.
 
 ## Retry Behavior
 

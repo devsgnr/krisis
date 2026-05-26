@@ -15,7 +15,7 @@ def test_answer_rate_reports_coverage() -> None:
 
     score = AnswerRate()(rows)
 
-    assert score.name == "Answer Rate (Coverage)"
+    assert score.name == "answer_rate"
     assert score.value == 2 / 3
     assert score.details["n_answered"] == 2
     assert score.n_abstained == 1
@@ -29,6 +29,6 @@ def test_selective_accuracy_name_clarifies_answered_only() -> None:
 
     score = SelectiveAccuracy()(rows)
 
-    assert score.name == "Selective Accuracy (answered only)"
+    assert score.name == "selective_accuracy"
     assert score.value == 1.0
     assert score.n_evaluated == 1

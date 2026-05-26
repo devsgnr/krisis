@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "krisis"
-version = "0.1.0"
+version = "0.2.0"
 description = "A clinical evaluation framework for large language models."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -46,46 +46,27 @@ dependencies = [
     "joblib>=1.4.0",
     "category-encoders>=2.6.0",
     "scipy>=1.12.0",
-
-    # Provider SDKs are optional at runtime.
+    "pydantic>=2.8.0",
 ]
 
 [project.optional-dependencies]
 
-# pip install krisis[openai]
-openai = [
+# pip install krisis[api]
+api = [
     "openai>=1.30.0",
 ]
 
-# pip install krisis[anthropic]
-anthropic = [
-    "anthropic>=0.28.0",
-]
-
-# pip install krisis[huggingface]
-huggingface = [
+# pip install krisis[hf]
+hf = [
     "transformers>=4.40.0",
     "huggingface-hub>=0.23.0",
     "torch>=2.2.0",
 ]
 
-# pip install krisis[grok]
-grok = [
-    "openai>=1.30.0",
-]
-
-# pip install krisis[gemini]
-gemini = [
-    "google-genai>=1.0.0",
-]
-
 # pip install krisis[all]
-# Installs every backend — useful for
-# running full model comparisons
+# Installs every optional backend integration.
 all = [
     "openai>=1.30.0",
-    "anthropic>=0.28.0",
-    "google-genai>=1.0.0",
     "transformers>=4.40.0",
     "huggingface-hub>=0.23.0",
     "torch>=2.2.0",

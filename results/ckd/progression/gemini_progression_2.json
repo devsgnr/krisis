@@ -1,13 +1,13 @@
 {
   "execution": {
     "batch_size": 8,
-    "elapsed_seconds": 91.42987504205666,
-    "input_tokens": 81169.0,
+    "elapsed_seconds": 57.17197274998762,
+    "input_tokens": 133382.0,
     "max_concurrency": 4,
-    "n_api_batches": 20,
-    "n_input_records": 160,
-    "n_prompts_captured": 160,
-    "output_tokens": 3425.0,
+    "n_api_batches": 30,
+    "n_input_records": 240,
+    "n_prompts_captured": 240,
+    "output_tokens": 41028.0,
     "prompt_capture": "evaluation_results.prompt",
     "prompt_data_policy": "patient_data_redacted",
     "prompt_modes": [
@@ -29,107 +29,106 @@
       }
     ],
     "prompt_templates_count": 1,
-    "records_per_second": 1.7499750483789012,
-    "token_total": 84594.0
+    "records_per_second": 4.197861092698642,
+    "token_total": 174410.0
   },
   "metrics": {
-    "Abstention Rate": {
+    "abstention_rate": {
       "breakdown": {
-        "stage_1": 0.7555555555555555,
-        "stage_2": 0.7575757575757576,
-        "stage_3": 0.5454545454545454,
-        "stage_4": 0.7727272727272727,
-        "stage_5": 0.3333333333333333
+        "stage_1": 0.7121212121212122,
+        "stage_2": 0.673469387755102,
+        "stage_3": 0.6666666666666666,
+        "stage_4": 0.6666666666666666,
+        "stage_5": 0.34146341463414637
       },
       "details": {
-        "n_answered": 57
+        "n_answered": 90
       },
-      "n_abstained": 103,
-      "n_evaluated": 160,
-      "name": "Abstention Rate",
-      "value": 0.64375
+      "n_abstained": 150,
+      "n_evaluated": 240,
+      "name": "abstention_rate",
+      "value": 0.625
     },
-    "Accuracy": {
+    "accuracy": {
       "breakdown": {
-        "stage_1": 0.2,
-        "stage_2": 0.18181818181818182,
-        "stage_3": 0.42424242424242425,
-        "stage_4": 0.18181818181818182,
-        "stage_5": 0.6666666666666666
+        "stage_1": 0.18181818181818182,
+        "stage_2": 0.1836734693877551,
+        "stage_3": 0.3137254901960784,
+        "stage_4": 0.3333333333333333,
+        "stage_5": 0.6341463414634146
       },
       "details": {
-        "n_correct": 51,
-        "n_incorrect": 109,
+        "n_correct": 74,
+        "n_incorrect": 166,
         "treat_abstention_as_neutral": false
       },
-      "n_abstained": 103,
-      "n_evaluated": 160,
-      "name": "Accuracy",
-      "value": 0.31875
+      "n_abstained": 150,
+      "n_evaluated": 240,
+      "name": "accuracy",
+      "value": 0.30833333333333335
     },
-    "Answer Rate (Coverage)": {
+    "answer_rate": {
       "breakdown": {
-        "stage_1": 0.24444444444444444,
-        "stage_2": 0.24242424242424243,
-        "stage_3": 0.45454545454545453,
-        "stage_4": 0.22727272727272727,
-        "stage_5": 0.6666666666666666
+        "stage_1": 0.2878787878787879,
+        "stage_2": 0.32653061224489793,
+        "stage_3": 0.3333333333333333,
+        "stage_4": 0.3333333333333333,
+        "stage_5": 0.6585365853658537
       },
       "details": {
-        "n_answered": 57
+        "n_answered": 90
       },
-      "n_abstained": 103,
-      "n_evaluated": 160,
-      "name": "Answer Rate (Coverage)",
-      "value": 0.35625
+      "n_abstained": 150,
+      "n_evaluated": 240,
+      "name": "answer_rate",
+      "value": 0.375
     },
-    "Balanced Accuracy": {
+    "balanced_accuracy": {
       "breakdown": {
-        "stage_1": 0.4090909090909091,
-        "stage_2": 0.2727272727272727,
-        "stage_3": 0.24,
-        "stage_4": 0.1,
-        "stage_5": 0.34615384615384615
+        "stage_1": 0.27611044417767105,
+        "stage_2": 0.3215811965811966,
+        "stage_3": 0.1568627450980392,
+        "stage_4": 0.1774193548387097,
+        "stage_5": 0.2222222222222222
       },
       "details": {},
-      "n_abstained": 103,
-      "n_evaluated": 160,
-      "name": "Balanced Accuracy",
-      "value": 0.3618501130238219
+      "n_abstained": 150,
+      "n_evaluated": 240,
+      "name": "balanced_accuracy",
+      "value": 0.34766918626141924
     },
-    "Brier Score": {
+    "brier_score": {
       "breakdown": {},
       "details": {
         "reason": "non_binary_labels_or_predictions"
       },
-      "n_abstained": 103,
-      "n_evaluated": 57,
-      "name": "Brier Score",
+      "n_abstained": 150,
+      "n_evaluated": 90,
+      "name": "brier_score",
       "value": null
     },
-    "Deferral Alignment": {
+    "deferral_alignment": {
       "breakdown": {},
       "details": {
         "confusion": {
-          "abstain_when_should_answer": 21,
-          "answer_when_safe": 47,
-          "answer_when_should_defer": 10,
-          "defer_when_needed": 82
+          "abstain_when_should_answer": 42,
+          "answer_when_safe": 61,
+          "answer_when_should_defer": 29,
+          "defer_when_needed": 108
         },
-        "n_labeled": 160
+        "n_labeled": 240
       },
-      "n_abstained": 103,
-      "n_evaluated": 160,
-      "name": "Deferral Alignment",
-      "value": 0.80625
+      "n_abstained": 150,
+      "n_evaluated": 240,
+      "name": "deferral_alignment",
+      "value": 0.7041666666666667
     },
-    "Expected Calibration Error": {
+    "expected_calibration_error": {
       "breakdown": {
-        "bin_10_gap": 0.30000000000000004,
-        "bin_11_gap": 0.07833333333333337,
-        "bin_12_gap": 0.16269230769230758,
-        "bin_13_gap": 0.10312499999999969,
-        "bin_9_gap": 0.6399999999999999
+        "bin_11_gap": 0.75,
+        "bin_12_gap": 0.37962962962962987,
+        "bin_13_gap": 0.09624999999999984,
+        "bin_14_gap": 0.04673913043478228
       },
       "details": {
         "bins": [
@@ -215,83 +214,83 @@
             "mean_confidence": null
           },
           {
-            "accuracy": 0.0,
+            "accuracy": null,
             "bin": 9,
-            "count": 5,
-            "gap": 0.6399999999999999,
+            "count": 0,
+            "gap": null,
             "high": 0.6666666666666666,
             "low": 0.6,
-            "mean_confidence": 0.6399999999999999
+            "mean_confidence": null
           },
           {
-            "accuracy": 1.0,
+            "accuracy": null,
             "bin": 10,
-            "count": 4,
-            "gap": 0.30000000000000004,
+            "count": 0,
+            "gap": null,
             "high": 0.7333333333333333,
             "low": 0.6666666666666666,
-            "mean_confidence": 0.7
+            "mean_confidence": null
           },
           {
-            "accuracy": 0.8333333333333334,
+            "accuracy": 0.0,
             "bin": 11,
-            "count": 6,
-            "gap": 0.07833333333333337,
+            "count": 1,
+            "gap": 0.75,
             "high": 0.8,
             "low": 0.7333333333333333,
-            "mean_confidence": 0.755
+            "mean_confidence": 0.75
           },
           {
-            "accuracy": 1.0,
+            "accuracy": 0.4444444444444444,
             "bin": 12,
-            "count": 26,
-            "gap": 0.16269230769230758,
+            "count": 27,
+            "gap": 0.37962962962962987,
             "high": 0.8666666666666667,
             "low": 0.8,
-            "mean_confidence": 0.8373076923076924
+            "mean_confidence": 0.8240740740740743
           },
           {
             "accuracy": 1.0,
             "bin": 13,
             "count": 16,
-            "gap": 0.10312499999999969,
+            "gap": 0.09624999999999984,
             "high": 0.9333333333333333,
             "low": 0.8666666666666667,
-            "mean_confidence": 0.8968750000000003
+            "mean_confidence": 0.9037500000000002
           },
           {
-            "accuracy": null,
+            "accuracy": 1.0,
             "bin": 14,
-            "count": 0,
-            "gap": null,
+            "count": 46,
+            "gap": 0.04673913043478228,
             "high": 1.0,
             "low": 0.9333333333333333,
-            "mean_confidence": null
+            "mean_confidence": 0.9532608695652177
           }
         ],
         "n_bins": 15
       },
-      "n_abstained": 103,
-      "n_evaluated": 57,
-      "name": "Expected Calibration Error",
-      "value": 0.18859649122807004
+      "n_abstained": 150,
+      "n_evaluated": 90,
+      "name": "expected_calibration_error",
+      "value": 0.16322222222222207
     },
-    "Selective Accuracy (answered only)": {
+    "selective_accuracy": {
       "breakdown": {
-        "stage_1": 0.8181818181818182,
-        "stage_2": 0.75,
-        "stage_3": 0.9333333333333333,
-        "stage_4": 0.8,
-        "stage_5": 1.0
+        "stage_1": 0.631578947368421,
+        "stage_2": 0.5625,
+        "stage_3": 0.9411764705882353,
+        "stage_4": 1.0,
+        "stage_5": 0.9629629629629629
       },
       "details": {
-        "n_correct": 51,
-        "n_incorrect": 6
+        "n_correct": 74,
+        "n_incorrect": 16
       },
-      "n_abstained": 103,
-      "n_evaluated": 57,
-      "name": "Selective Accuracy (answered only)",
-      "value": 0.8947368421052632
+      "n_abstained": 150,
+      "n_evaluated": 90,
+      "name": "selective_accuracy",
+      "value": 0.8222222222222222
     }
   }
 }

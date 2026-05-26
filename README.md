@@ -23,7 +23,7 @@ abstain, and express uncertainty before their outputs are trusted.
 Krisis provides:
 
 - clinical task suites that produce structured patient records
-- provider backends for OpenAI, Anthropic, Grok, and Google Gemini
+- a unified API backend for OpenAI, Anthropic, Grok, Gemini, and other OpenRouter-routed models
 - batched and concurrent benchmark execution
 - retry/backoff handling for transient provider failures
 - structured parsing of model predictions, confidence, and abstentions
@@ -33,7 +33,7 @@ Krisis provides:
 
 ## Research Status And Limitations
 
-Krisis v0.1 currently includes one implemented suite: Chronic Kidney Disease
+Krisis v0.2 currently includes one implemented suite: Chronic Kidney Disease
 (CKD), based on the UCI CKD dataset.
 
 Supported CKD tasks:
@@ -44,7 +44,7 @@ Supported CKD tasks:
 
 Important limitations:
 
-- CKD is the only available suite in v0.1.
+- CKD is the only available suite in v0.2.
 - The UCI CKD dataset is small and cross-sectional.
 - Progression is synthetic because the source dataset is not longitudinal.
 - Krisis is for research and evaluation only. It is not a medical device and
@@ -60,23 +60,33 @@ Install Krisis:
 pip install krisis
 ```
 
-Install provider-specific dependencies:
+Install API model support:
 
 ```bash
-pip install "krisis[openai]"
-pip install "krisis[anthropic]"
-pip install "krisis[grok]"
-pip install "krisis[gemini]"
+pip install "krisis[api]"
+```
+
+Then create an API key from
+[OpenRouter](https://openrouter.ai/settings/keys) and set it locally:
+
+```bash
+export OPENROUTER_API_KEY="..."
+```
+
+Hugging Face support will use the `hf` extra when implemented:
+
+```bash
+pip install "krisis[hf]"
 ```
 
 ## Quickstart
 
 > **Warning**
-> Krisis v0.1 only includes the CKD suite. The UCI CKD CSV is not bundled with
+> Krisis v0.2 only includes the CKD suite. The UCI CKD CSV is not bundled with
 > the package; download it locally and pass its path to `CKDSuite`.
 
 ```python
-from krisis.backends.openai import OpenAIBackend
+from krisis.backends.api import APIBackend
 from krisis.benchmark import Benchmark
 from krisis.data.base import FeatureSet, SuiteConfig, Task
 from krisis.data.ckd.suite import CKDSuite
@@ -93,9 +103,10 @@ suite = CKDSuite(
     data_path="datasets/ckd/ckd_full.csv",
 )
 
-backend = OpenAIBackend(
-    model="gpt-5.5",
-    api_key="YOUR_API_KEY",
+backend = APIBackend(
+    model="openai/gpt-5.5",
+    api_key="YOUR_OPENROUTER_API_KEY",
+    reasoning_effort="low",
 )
 
 result = Benchmark(
@@ -178,12 +189,12 @@ from how often it chose not to answer.
 
 ## Model Backends
 
-| Provider      | Backend            | Default model           |
-| ------------- | ------------------ | ----------------------- |
-| OpenAI        | `OpenAIBackend`    | `gpt-5.5`               |
-| Anthropic     | `AnthropicBackend` | `claude-opus-4-7`       |
-| Grok          | `GrokBackend`      | `grok-4.3`              |
-| Google Gemini | `GeminiBackend`    | `gemini-3-pro-preview`  |
+| Route | Backend | Example model |
+|---|---|---|
+| API | `APIBackend` | `openai/gpt-5.5` |
+| API | `APIBackend` | `anthropic/claude-opus-4.7` |
+| API | `APIBackend` | `x-ai/grok-4.3` |
+| API | `APIBackend` | `google/gemini-3.5-flash` |
 
 All backends return the same structured fields:
 
@@ -206,7 +217,7 @@ If you use Krisis in research, please cite it as software:
   author = {Watila, Emmanuel},
   title = {Krisis: A Clinical Evaluation Framework for Large Language Models},
   year = {2026},
-  version = {0.1.0},
+  version = {0.2.0},
   url = {https://github.com/devsgnr/krisis}
 }
 ```

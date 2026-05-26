@@ -33,9 +33,9 @@ benchmarks:
 |---|---|
 | `batch_size` | `Benchmark(...)` |
 | `max_concurrency` | `Benchmark(...)` |
-| `max_retries` | provider backend |
-| `retry_base_seconds` | provider backend |
-| `retry_max_seconds` | provider backend |
+| `max_retries` | API backend |
+| `retry_base_seconds` | API backend |
+| `retry_max_seconds` | API backend |
 | `token_total` | `BenchmarkResult.extras` |
 | `elapsed_seconds` | `BenchmarkResult.extras` |
 | `records_per_second` | `BenchmarkResult.extras` |
@@ -45,6 +45,6 @@ benchmarks:
 | `prompt_templates` | `BenchmarkResult.extras` |
 
 !!! note "Concrete suites live in the framework guide"
-    CKD is the first implemented suite in Krisis v0.1, but the API reference
+    CKD is the first implemented suite in Krisis v0.2, but the API reference
     focuses on reusable base classes. CKD-specific behavior is documented under
     Framework Guide → Suites → CKD.

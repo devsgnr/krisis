@@ -5,13 +5,13 @@ framework: what data it accepts, how suites turn data into tasks, how models are
 called, what metrics mean, and how results should be reported.
 
 !!! warning "Current scope"
-    Krisis v0.1 has one implemented clinical domain: Chronic Kidney Disease
+    Krisis v0.2 has one implemented clinical domain: Chronic Kidney Disease
     (CKD). Diabetes and hypertension are listed as planned domains, but they are
     not implemented yet.
 
 !!! note "Code examples are CKD-first"
     Most example snippets use `CKDSuite` because it is the only suite available
-    in v0.1. Treat those snippets as examples of the Krisis framework pattern,
+    in v0.2. Treat those snippets as examples of the Krisis framework pattern,
     not as proof that every clinical domain is already implemented.
 
 ## What To Read First
@@ -21,9 +21,9 @@ called, what metrics mean, and how results should be reported.
 | [Datasets](datasets/index.md) | supported source data, dataset policy, and why Krisis does not bundle clinical CSV files |
 | [Suites](suites/index.md) | how raw rows become benchmark-ready `PatientRecord` objects |
 | [Metrics](metrics.md) | how correctness, abstention, deferral, and calibration are scored |
-| [Model Backends](backends.md) | how OpenAI, Anthropic, Grok, and Gemini are plugged into the same interface |
+| [Model Backends](backends.md) | how OpenRouter routes OpenAI, Anthropic, Grok, Gemini, and other models through one interface |
 | [Outputs](outputs.md) | text reports, full JSON, metrics-only JSON, and plotting fields |
-| [Research Status](research.md) | what Krisis v0.1 does and does not claim |
+| [Research Status](research.md) | what Krisis v0.2 does and does not claim |
 
 ## Framework Shape
 

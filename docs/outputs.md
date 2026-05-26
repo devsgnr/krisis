@@ -27,7 +27,7 @@ Example shape:
 ```text
 Krisis benchmark
 ================
-Backend: openai:gpt-5.5
+Backend: api:openai/gpt-5.5
 
 Suite
 -----
@@ -94,16 +94,16 @@ Metrics-only JSON keeps the important aggregate fields:
 
 ```json
 {
-  "backend_name": "openai:gpt-5.5",
+  "backend_name": "api:openai/gpt-5.5",
   "suite": {
     "task": "staging",
     "feature_set": "full",
     "n_total_eval_records": 160
   },
   "metrics": {
-    "Accuracy": {"value": 0.7125},
-    "Abstention Rate": {"value": 0.2},
-    "Selective Accuracy (answered only)": {"value": 0.8906}
+    "accuracy": {"value": 0.7125},
+    "abstention_rate": {"value": 0.2},
+    "selective_accuracy": {"value": 0.8906}
   },
   "execution": {
     "batch_size": 8,
@@ -226,13 +226,13 @@ For bar charts across models, the most useful fields are:
 
 | Plot | JSON path |
 |---|---|
-| Overall accuracy | `metrics.Accuracy.value` |
-| Balanced accuracy | `metrics.Balanced Accuracy.value` |
-| Answered-only accuracy | `metrics.Selective Accuracy (answered only).value` |
-| Abstention rate | `metrics.Abstention Rate.value` |
-| Coverage | `metrics.Answer Rate (Coverage).value` |
-| Deferral alignment | `metrics.Deferral Alignment.value` |
-| Calibration error | `metrics.Expected Calibration Error.value` |
+| Overall accuracy | `metrics.accuracy.value` |
+| Balanced accuracy | `metrics.balanced_accuracy.value` |
+| Answered-only accuracy | `metrics.selective_accuracy.value` |
+| Abstention rate | `metrics.abstention_rate.value` |
+| Coverage | `metrics.answer_rate.value` |
+| Deferral alignment | `metrics.deferral_alignment.value` |
+| Calibration error | `metrics.expected_calibration_error.value` |
 | Runtime | `execution.elapsed_seconds` |
 | Throughput | `execution.records_per_second` |
 | Token use | `execution.token_total` |

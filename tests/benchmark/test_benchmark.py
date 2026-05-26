@@ -148,7 +148,7 @@ def test_benchmark_echo_detection() -> None:
     run = Benchmark(suite, _EchoBackend(), metrics=[SelectiveAccuracy()]).run()
 
     assert len(run.evaluation_results) == 2
-    assert run.metric_scores["Selective Accuracy (answered only)"].value == 1.0
+    assert run.metric_scores["selective_accuracy"].value == 1.0
 
 
 def test_benchmark_concurrent_batches_preserve_row_order() -> None:
@@ -190,7 +190,7 @@ def test_benchmark_falls_back_when_batch_response_is_malformed() -> None:
     ).run()
 
     assert [r.prediction for r in run.evaluation_results] == [0, 1, 0]
-    assert run.metric_scores["Selective Accuracy (answered only)"].value == 1.0
+    assert run.metric_scores["selective_accuracy"].value == 1.0
 
 
 def test_abstention_rate_and_selective_accuracy() -> None:
@@ -205,11 +205,11 @@ def test_abstention_rate_and_selective_accuracy() -> None:
         metrics=[AnswerRate(), AbstentionRate(), SelectiveAccuracy()],
     ).run()
 
-    answer_rate = run.metric_scores["Answer Rate (Coverage)"]
+    answer_rate = run.metric_scores["answer_rate"]
     assert answer_rate.value == 0.5
-    ar = run.metric_scores["Abstention Rate"]
+    ar = run.metric_scores["abstention_rate"]
     assert ar.value == 0.5
-    sa = run.metric_scores["Selective Accuracy (answered only)"]
+    sa = run.metric_scores["selective_accuracy"]
     assert sa.n_evaluated == 1
     assert sa.value == 1.0
 
@@ -229,7 +229,7 @@ def test_deferral_alignment_with_metadata() -> None:
     ]
     suite = _FakeSuite(records)
     run = Benchmark(suite, _EchoBackend(), metrics=[DeferralAlignment()]).run()
-    score = run.metric_scores["Deferral Alignment"]
+    score = run.metric_scores["deferral_alignment"]
     assert score.n_evaluated == 2
     assert score.value == 0.5
 
@@ -252,7 +252,7 @@ def test_format_json_report_contains_metrics_and_results() -> None:
 
     assert data["backend_name"] == "echo"
     assert data["suite"]["domain"] == "fake"
-    assert data["metrics"]["Abstention Rate"]["value"] == 0.0
+    assert data["metrics"]["abstention_rate"]["value"] == 0.0
     assert data["evaluation_results"][0]["ground_truth"] == 0
     assert data["evaluation_results"][0]["prompt"] == [
         {"role": "system", "content": "fake single prompt"}
@@ -267,7 +267,7 @@ def test_benchmark_result_json_replaces_nan_with_null() -> None:
 
     data = json.loads(run.to_json(include_results=False))
 
-    assert data["metrics"]["Deferral Alignment"]["value"] is None
+    assert data["metrics"]["deferral_alignment"]["value"] is None
     assert "evaluation_results" not in data
 
 
@@ -279,8 +279,8 @@ def test_format_metrics_json_report_contains_only_metrics() -> None:
     data = json.loads(format_metrics_json_report(run))
 
     assert set(data) == {"metrics", "execution"}
-    assert set(data["metrics"]) == {"Abstention Rate"}
-    assert data["metrics"]["Abstention Rate"]["value"] == 0.0
+    assert set(data["metrics"]) == {"abstention_rate"}
+    assert data["metrics"]["abstention_rate"]["value"] == 0.0
     assert data["execution"]["batch_size"] == 8
     assert data["execution"]["max_concurrency"] == 1
     assert data["execution"]["n_input_records"] == 1
@@ -306,5 +306,5 @@ def test_deferral_alignment_skipped_without_labels() -> None:
     records = [PatientRecord(features={"x": 1}, label=0)]
     suite = _FakeSuite(records)
     run = Benchmark(suite, _EchoBackend(), metrics=[DeferralAlignment()]).run()
-    val = run.metric_scores["Deferral Alignment"].value
+    val = run.metric_scores["deferral_alignment"].value
     assert isinstance(val, float) and math.isnan(val)

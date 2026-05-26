@@ -38,7 +38,7 @@ def _stage_rate_breakdown(
 class AbstentionRate(BaseMetric):
     """Fraction of evaluations where the model abstained."""
 
-    name = "Abstention Rate"
+    name = "abstention_rate"
 
     def compute(self, results: list[EvaluationResult]) -> MetricScore:
         n = len(results)
@@ -62,7 +62,7 @@ class AbstentionRate(BaseMetric):
 class AnswerRate(BaseMetric):
     """Fraction of evaluations where the model attempted an answer."""
 
-    name = "Answer Rate (Coverage)"
+    name = "answer_rate"
 
     def compute(self, results: list[EvaluationResult]) -> MetricScore:
         n = len(results)
@@ -92,7 +92,7 @@ class SelectiveAccuracy(BaseMetric):
     a non-abstained prediction of ``None`` count as incorrect.
     """
 
-    name = "Selective Accuracy (answered only)"
+    name = "selective_accuracy"
 
     def compute(self, results: list[EvaluationResult]) -> MetricScore:
         answered = [r for r in results if not r.abstained]
@@ -143,7 +143,7 @@ class DeferralAlignment(BaseMetric):
     metric returns NaN and documents why in ``details``.
     """
 
-    name = "Deferral Alignment"
+    name = "deferral_alignment"
 
     def compute(self, results: list[EvaluationResult]) -> MetricScore:
         n_abs = sum(1 for r in results if r.abstained)

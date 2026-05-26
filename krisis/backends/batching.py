@@ -96,6 +96,8 @@ def build_batch_messages(
     user = (
         "Evaluate the following cases as an independent batch.\n\n"
         + "\n\n---\n\n".join(case_blocks)
+        + "\n\nReturn the JSON object as specified in the system message. "
+        "Return JSON only."
     )
     return [
         {"role": "system", "content": system},
@@ -116,6 +118,35 @@ def _extract_json_blob(raw: str) -> str | None:
     return None
 
 
+def _loads_json_with_light_repairs(blob: str) -> Any:
+    """Load JSON, repairing a few common LLM formatting slips."""
+    try:
+        return json.loads(blob)
+    except json.JSONDecodeError as original_error:
+        candidates = [
+            # Some models omit commas between adjacent result objects:
+            # {"results":[{...}{...}]}
+            re.sub(r"}\s*{", "},{", blob),
+            # Some models leave trailing commas before a closing object/array.
+            re.sub(r",\s*([}\]])", r"\1", blob),
+        ]
+        candidates.append(re.sub(r",\s*([}\]])", r"\1", candidates[0]))
+
+        for candidate in candidates:
+            if candidate == blob:
+                continue
+            try:
+                return json.loads(candidate)
+            except json.JSONDecodeError:
+                continue
+
+        preview = blob[:300] if blob else "<empty response>"
+        raise ValueError(
+            "Batched model response contained malformed JSON. "
+            f"JSON error: {original_error}. Response preview: {preview}"
+        ) from original_error
+
+
 def parse_batch_response(
     raw: str,
     task: Task,
@@ -130,7 +161,7 @@ def parse_batch_response(
             f"Response preview: {preview}"
         )
 
-    data = json.loads(blob)
+    data = _loads_json_with_light_repairs(blob)
     results = data.get("results") if isinstance(data, dict) else None
     if not isinstance(results, list):
         raise ValueError("Batched model response must contain a results array.")

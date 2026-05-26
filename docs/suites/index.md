@@ -12,7 +12,7 @@ suite descriptions.
 
 | Suite | Status | Dataset | Tasks |
 |---|---|---|---|
-| [CKD Suite](ckd.md) | Available in v0.1 | UCI CKD dataset | detection, staging, synthetic progression |
+| [CKD Suite](ckd.md) | Available in v0.2 | UCI CKD dataset | detection, staging, synthetic progression |
 | [Diabetes Suite](diabetes.md) | Coming soon | Not available yet | Not available yet |
 | [Hypertension Suite](hypertension.md) | Coming soon | Not available yet | Not available yet |
 

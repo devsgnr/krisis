@@ -1,0 +1,290 @@
+{
+  "execution": {
+    "batch_size": 8,
+    "elapsed_seconds": 16.893491291208193,
+    "input_tokens": 57064.0,
+    "max_concurrency": 4,
+    "n_api_batches": 20,
+    "n_input_records": 160,
+    "n_prompts_captured": 160,
+    "output_tokens": 6489.0,
+    "prompt_capture": "evaluation_results.prompt",
+    "prompt_data_policy": "patient_data_redacted",
+    "prompt_modes": [
+      "batch"
+    ],
+    "prompt_templates": [
+      {
+        "prompt": [
+          {
+            "content": "You are a careful clinical assistant assigning CKD stage (1\u20135) from tabulated features. Use the eGFR value when present.\n\nKDIGO eGFR staging:\n- Stage 1: eGFR >= 90\n- Stage 2: eGFR 60-89\n- Stage 3: eGFR 30-59\n- Stage 4: eGFR 15-29\n- Stage 5: eGFR < 15\n\nRules:\n- Never invent measurements not present in the input.\n- If eGFR is present and not close to a staging threshold, assign the stage from the thresholds above.\n- Abstain when eGFR is missing or when egfr_threshold_margin is 3.0 or lower.\n- If egfr_threshold_margin is greater than 3.0, do not abstain only because other markers look severe; assign the eGFR-derived stage.\n- Otherwise set \"abstained\": false and output an integer stage from 1 to 5.\n\nRespond with a single JSON object only (no markdown fences), exactly:\n{\"abstained\": <boolean>, \"confidence\": <number between 0 and 1>, \"prediction\": <integer 1-5 or null>}\n\n\nBatch mode rules:\n- Follow this batched output shape instead of any single-case output shape above.\n- Evaluate each case independently.\n- Do not use information from one case to answer another case.\n- Return exactly one result object for every case id.\n- Preserve each id exactly as provided.\n- Return a single JSON object only, with this shape:\n{\"results\":[{\"id\":\"case_0\",\"abstained\":false,\"confidence\":0.82,\"prediction\":0}]}",
+            "role": "system"
+          },
+          {
+            "content": "Evaluate the following cases as an independent batch.\n\n[BATCH_PATIENT_DATA_REDACTED]\n\nReturn the JSON object as specified in the system message.",
+            "role": "user"
+          }
+        ],
+        "prompt_mode": "batch"
+      }
+    ],
+    "prompt_templates_count": 1,
+    "records_per_second": 9.471103233898615,
+    "token_total": 63553.0
+  },
+  "metrics": {
+    "Abstention Rate": {
+      "breakdown": {
+        "stage_1": 0.06666666666666667,
+        "stage_2": 0.3939393939393939,
+        "stage_3": 0.18181818181818182,
+        "stage_4": 0.45454545454545453,
+        "stage_5": 0.1111111111111111
+      },
+      "details": {
+        "n_answered": 125
+      },
+      "n_abstained": 35,
+      "n_evaluated": 160,
+      "name": "Abstention Rate",
+      "value": 0.21875
+    },
+    "Accuracy": {
+      "breakdown": {
+        "stage_1": 0.8888888888888888,
+        "stage_2": 0.5454545454545454,
+        "stage_3": 0.8181818181818182,
+        "stage_4": 0.45454545454545453,
+        "stage_5": 0.7777777777777778
+      },
+      "details": {
+        "n_correct": 116,
+        "n_incorrect": 44,
+        "treat_abstention_as_neutral": false
+      },
+      "n_abstained": 35,
+      "n_evaluated": 160,
+      "name": "Accuracy",
+      "value": 0.725
+    },
+    "Answer Rate (Coverage)": {
+      "breakdown": {
+        "stage_1": 0.9333333333333333,
+        "stage_2": 0.6060606060606061,
+        "stage_3": 0.8181818181818182,
+        "stage_4": 0.5454545454545454,
+        "stage_5": 0.8888888888888888
+      },
+      "details": {
+        "n_answered": 125
+      },
+      "n_abstained": 35,
+      "n_evaluated": 160,
+      "name": "Answer Rate (Coverage)",
+      "value": 0.78125
+    },
+    "Balanced Accuracy": {
+      "breakdown": {},
+      "details": {},
+      "n_abstained": 35,
+      "n_evaluated": 160,
+      "name": "Balanced Accuracy",
+      "value": 0.696969696969697
+    },
+    "Brier Score": {
+      "breakdown": {},
+      "details": {
+        "reason": "non_binary_labels_or_predictions"
+      },
+      "n_abstained": 35,
+      "n_evaluated": 125,
+      "name": "Brier Score",
+      "value": null
+    },
+    "Deferral Alignment": {
+      "breakdown": {},
+      "details": {
+        "confusion": {
+          "abstain_when_should_answer": 0,
+          "answer_when_safe": 125,
+          "answer_when_should_defer": 0,
+          "defer_when_needed": 35
+        },
+        "n_labeled": 160
+      },
+      "n_abstained": 35,
+      "n_evaluated": 160,
+      "name": "Deferral Alignment",
+      "value": 1.0
+    },
+    "Expected Calibration Error": {
+      "breakdown": {
+        "bin_10_gap": 0.30000000000000004,
+        "bin_12_gap": 0.15000000000000002,
+        "bin_13_gap": 0.2333333333333335,
+        "bin_14_gap": 0.01194690265486864
+      },
+      "details": {
+        "bins": [
+          {
+            "accuracy": null,
+            "bin": 0,
+            "count": 0,
+            "gap": null,
+            "high": 0.06666666666666667,
+            "low": 0.0,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 1,
+            "count": 0,
+            "gap": null,
+            "high": 0.13333333333333333,
+            "low": 0.06666666666666667,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 2,
+            "count": 0,
+            "gap": null,
+            "high": 0.2,
+            "low": 0.13333333333333333,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 3,
+            "count": 0,
+            "gap": null,
+            "high": 0.26666666666666666,
+            "low": 0.2,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 4,
+            "count": 0,
+            "gap": null,
+            "high": 0.3333333333333333,
+            "low": 0.26666666666666666,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 5,
+            "count": 0,
+            "gap": null,
+            "high": 0.4,
+            "low": 0.3333333333333333,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 6,
+            "count": 0,
+            "gap": null,
+            "high": 0.4666666666666667,
+            "low": 0.4,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 7,
+            "count": 0,
+            "gap": null,
+            "high": 0.5333333333333333,
+            "low": 0.4666666666666667,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 8,
+            "count": 0,
+            "gap": null,
+            "high": 0.6,
+            "low": 0.5333333333333333,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": null,
+            "bin": 9,
+            "count": 0,
+            "gap": null,
+            "high": 0.6666666666666666,
+            "low": 0.6,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": 1.0,
+            "bin": 10,
+            "count": 1,
+            "gap": 0.30000000000000004,
+            "high": 0.7333333333333333,
+            "low": 0.6666666666666666,
+            "mean_confidence": 0.7
+          },
+          {
+            "accuracy": null,
+            "bin": 11,
+            "count": 0,
+            "gap": null,
+            "high": 0.8,
+            "low": 0.7333333333333333,
+            "mean_confidence": null
+          },
+          {
+            "accuracy": 1.0,
+            "bin": 12,
+            "count": 2,
+            "gap": 0.15000000000000002,
+            "high": 0.8666666666666667,
+            "low": 0.8,
+            "mean_confidence": 0.85
+          },
+          {
+            "accuracy": 0.6666666666666666,
+            "bin": 13,
+            "count": 9,
+            "gap": 0.2333333333333335,
+            "high": 0.9333333333333333,
+            "low": 0.8666666666666667,
+            "mean_confidence": 0.9000000000000001
+          },
+          {
+            "accuracy": 0.9469026548672567,
+            "bin": 14,
+            "count": 113,
+            "gap": 0.01194690265486864,
+            "high": 1.0,
+            "low": 0.9333333333333333,
+            "mean_confidence": 0.9588495575221253
+          }
+        ],
+        "n_bins": 15
+      },
+      "n_abstained": 35,
+      "n_evaluated": 125,
+      "name": "Expected Calibration Error",
+      "value": 0.03240000000000126
+    },
+    "Selective Accuracy (answered only)": {
+      "breakdown": {
+        "stage_1": 0.9523809523809523,
+        "stage_2": 0.9,
+        "stage_3": 1.0,
+        "stage_4": 0.8333333333333334,
+        "stage_5": 0.875
+      },
+      "details": {
+        "n_correct": 116,
+        "n_incorrect": 9
+      },
+      "n_abstained": 35,
+      "n_evaluated": 125,
+      "name": "Selective Accuracy (answered only)",
+      "value": 0.928
+    }
+  }
+}

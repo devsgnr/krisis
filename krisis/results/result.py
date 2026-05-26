@@ -8,16 +8,17 @@ from __future__ import annotations
 
 import json
 import math
-from dataclasses import asdict, dataclass, field, is_dataclass
 from typing import Any
+
+from pydantic import BaseModel, Field
 
 from krisis.metrics.base import EvaluationResult, MetricScore
 
 
 def _json_safe(value: Any) -> Any:
     """Recursively convert benchmark artefacts into strict JSON values."""
-    if is_dataclass(value) and not isinstance(value, type):
-        return _json_safe(asdict(value))
+    if isinstance(value, BaseModel):
+        return _json_safe(value.model_dump())
     if isinstance(value, dict):
         return {str(k): _json_safe(v) for k, v in value.items()}
     if isinstance(value, (list, tuple)):
@@ -29,15 +30,14 @@ def _json_safe(value: Any) -> Any:
     return value
 
 
-@dataclass
-class BenchmarkResult:
+class BenchmarkResult(BaseModel):
     """All artefacts produced by ``Benchmark.run()``."""
 
     evaluation_results: list[EvaluationResult]
     metric_scores: dict[str, MetricScore]
     suite_description: dict[str, Any]
     backend_name: str = ""
-    extras: dict[str, Any] = field(default_factory=dict)
+    extras: dict[str, Any] = Field(default_factory=dict)
 
     def to_dict(self, *, include_results: bool = True) -> dict[str, Any]:
         """

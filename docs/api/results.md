@@ -1,7 +1,8 @@
 # Results
 
-Benchmark runs return a `BenchmarkResult`. It contains row-level evaluation
-results, metric scores, suite metadata, backend name, and execution metadata.
+Benchmark runs return a Pydantic `BenchmarkResult`. It contains row-level
+evaluation results, metric scores, suite metadata, backend name, and execution
+metadata.
 
 ## Execution Extras
 

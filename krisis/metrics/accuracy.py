@@ -85,7 +85,7 @@ class Accuracy(BaseMetric):
     excluded, but still reported with full ``n_abstained`` on the run).
     """
 
-    name = "Accuracy"
+    name = "accuracy"
 
     def __init__(self, treat_abstention_as_neutral: bool = False) -> None:
         self.treat_abstention_as_neutral = treat_abstention_as_neutral
@@ -173,7 +173,7 @@ class BalancedAccuracy(BaseMetric):
     ``stable`` / ``worsening`` / ``improving`` are supported.
     """
 
-    name = "Balanced Accuracy"
+    name = "balanced_accuracy"
 
     def compute(self, results: list[EvaluationResult]) -> MetricScore:
         n_abs = sum(1 for r in results if r.abstained)

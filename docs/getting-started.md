@@ -4,7 +4,7 @@ This guide takes you from installation to a first CKD benchmark run.
 
 !!! note "Examples use CKDSuite"
     Most code snippets in the documentation use `CKDSuite` because CKD is the
-    only implemented suite in Krisis v0.1. The same framework shape is intended
+    only implemented suite in Krisis v0.2. The same framework shape is intended
     for future suites, but diabetes and hypertension are not available yet.
 
 !!! warning "Synthetic benchmark rows"
@@ -18,16 +18,14 @@ This guide takes you from installation to a first CKD benchmark run.
 Install Krisis:
 
 ```bash
-pip install krisis
+pip install "krisis[api]"
 ```
 
-Provider SDKs are optional so users only install what they need:
+Create an API key from [OpenRouter](https://openrouter.ai/settings/keys), then
+set it locally:
 
 ```bash
-pip install "krisis[openai]"
-pip install "krisis[anthropic]"
-pip install "krisis[grok]"
-pip install "krisis[gemini]"
+export OPENROUTER_API_KEY="..."
 ```
 
 ## Dataset Setup
@@ -48,7 +46,7 @@ datasets/ckd/ckd_full.csv
 ## First Benchmark
 
 ```python
-from krisis.backends.openai import OpenAIBackend
+from krisis.backends.api import APIBackend
 from krisis.benchmark import Benchmark
 from krisis.data.base import FeatureSet, SuiteConfig, Task
 from krisis.data.ckd.suite import CKDSuite
@@ -65,9 +63,10 @@ suite = CKDSuite(
     data_path="datasets/ckd/ckd_full.csv",
 )
 
-backend = OpenAIBackend(
-    model="gpt-5.5",
-    api_key="YOUR_API_KEY",
+backend = APIBackend(
+    model="openai/gpt-5.5",
+    api_key="YOUR_OPENROUTER_API_KEY",
+    reasoning_effort="low",
 )
 
 result = Benchmark(
@@ -97,14 +96,12 @@ Supported task values:
 | `Task.STAGING` | CKD stage |
 | `Task.PROGRESSION` | synthetic stable/worsening/improving trajectory |
 
-## Switching Backends
+## Switching Models
 
 ```python
-from krisis.backends.anthropic import AnthropicBackend
-from krisis.backends.gemini import GeminiBackend
-from krisis.backends.grok import GrokBackend
-from krisis.backends.openai import OpenAIBackend
+backend = APIBackend(model="anthropic/claude-opus-4.7")
+backend = APIBackend(model="x-ai/grok-4.3")
+backend = APIBackend(model="google/gemini-3.5-flash")
 ```
 
-All backends work with the same `Benchmark` class and return the same response
-fields.
+The benchmark code does not change. Only the OpenRouter model id changes.

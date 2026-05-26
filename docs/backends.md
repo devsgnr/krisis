@@ -1,31 +1,32 @@
 # Model Backends
 
-Model backends adapt provider APIs into one standard Krisis interface. This is
-what makes it possible to run the same clinical task across OpenAI, Anthropic,
-Grok, and Gemini while receiving comparable result objects.
+Model backends adapt model APIs into one standard Krisis interface. In v0.2,
+Krisis uses a single `APIBackend` powered by OpenRouter: the same clinical task
+can run across OpenAI, Anthropic, Grok, Gemini, and other routed models by
+changing only the model id.
 
-## Supported Providers
+## API Backend
 
-| Provider | Backend | Default model | Install extra |
-|---|---|---|---|
-| OpenAI | `OpenAIBackend` | `gpt-5.5` | `krisis[openai]` |
-| Anthropic | `AnthropicBackend` | `claude-opus-4-7` | `krisis[anthropic]` |
-| Grok | `GrokBackend` | `grok-4.3` | `krisis[grok]` |
-| Google Gemini | `GeminiBackend` | `gemini-3-pro-preview` | `krisis[gemini]` |
+| Backend | Default model | API key |
+|---|---|---|
+| `APIBackend` | `openai/gpt-5.5` | `OPENROUTER_API_KEY` |
 
-Install only the provider clients you need:
+Example model ids:
 
-```bash
-pip install "krisis[openai]"
-pip install "krisis[anthropic]"
-pip install "krisis[grok]"
-pip install "krisis[gemini]"
-```
+| Provider route | Example model id |
+|---|---|
+| OpenAI | `openai/gpt-5.5` |
+| Anthropic | `anthropic/claude-opus-4.7` |
+| Grok/xAI | `x-ai/grok-4.3` |
+| Google Gemini | `google/gemini-3.5-flash` |
 
-Or install all provider extras:
+```python
+from krisis.backends.api import APIBackend
 
-```bash
-pip install "krisis[all]"
+backend = APIBackend(
+    model="anthropic/claude-opus-4.7",
+    reasoning_effort="low",
+)
 ```
 
 ## Backend Contract
@@ -62,28 +63,23 @@ Field meanings:
 
 ## API Keys
 
-You can pass provider keys directly:
+Create an API key from [OpenRouter](https://openrouter.ai/settings/keys), then
+set `OPENROUTER_API_KEY` or pass the key directly:
 
 ```python
-from krisis.backends.openai import OpenAIBackend
+from krisis.backends.api import APIBackend
 
-backend = OpenAIBackend(api_key="YOUR_OPENAI_KEY")
+backend = APIBackend(api_key="YOUR_OPENROUTER_KEY")
 ```
 
-Provider examples:
+The example runner accepts `--api-key`, reads `OPENROUTER_API_KEY` through the
+backend, and still supports `API_KEY` as a local convenience when passed from
+the examples.
 
-```python
-from krisis.backends.anthropic import AnthropicBackend
-from krisis.backends.gemini import GeminiBackend
-from krisis.backends.grok import GrokBackend
-
-anthropic_backend = AnthropicBackend(api_key="YOUR_ANTHROPIC_KEY")
-gemini_backend = GeminiBackend(api_key="YOUR_GEMINI_KEY")
-grok_backend = GrokBackend(api_key="YOUR_XAI_KEY")
-```
-
-The example runner supports the generic `API_KEY` environment variable and
-provider-native environment variables where available.
+One OpenRouter key can be used with routed model ids such as
+`openai/gpt-5.5`, `anthropic/claude-opus-4.7`, `x-ai/grok-4.3`, and
+`google/gemini-3.5-flash`, subject to model availability and your OpenRouter
+account settings.
 
 !!! warning "Do not commit API keys"
     Keep API keys in environment variables, local secret managers, or CI
@@ -110,7 +106,8 @@ result = Benchmark(
 |---|---|
 | `batch_size` | How many patient records are sent in one provider call |
 | `max_concurrency` | How many provider calls may run at the same time |
-| `max_output_tokens` | Per-row output-token cap passed to the provider backend |
+| `max_output_tokens` | Per-row output-token cap passed to the API backend |
+| `reasoning_effort` | API reasoning effort for supported models; defaults to `low` |
 
 Example: `batch_size=8` and `max_concurrency=2` can evaluate up to 16 records in
 flight, split across two API calls.
@@ -124,10 +121,17 @@ flight, split across two API calls.
     example runner's `--max-output-tokens` value. For larger frontier models,
     also try a smaller `--batch-size` so each call has less JSON to produce.
 
-!!! note "OpenAI token cap"
-    The OpenAI backend defaults to `max_completion_tokens=1024` per row. This is
-    higher than the visible JSON usually needs because OpenAI reasoning models
-    may consume part of the completion budget before emitting the final JSON.
+!!! note "API token caps"
+    `APIBackend` defaults to `1024` output tokens per row. This
+    is higher than the visible JSON usually needs because larger reasoning
+    models may consume part of the completion budget before emitting the final
+    JSON.
+
+!!! note "Reasoning effort"
+    `APIBackend` defaults to `reasoning_effort="low"` for faster,
+    lower-token schema-constrained evaluation. Pass `reasoning_effort=None` to
+    omit the provider parameter entirely. In the example CLI, use
+    `--reasoning-effort omit` to omit it.
 
 ## Structured Output
 

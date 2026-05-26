@@ -1,9 +1,8 @@
 """Run the CKD progression benchmark.
 
 Usage:
-    API_KEY=... python examples/ckd_progression.py --backend openai --model gpt-5.2 --n-synthetic 80
-    API_KEY=... python examples/ckd_progression.py --backend anthropic --n-synthetic 80 --metrics-only
-    API_KEY=... python examples/ckd_progression.py --backend grok --n-synthetic 80 --metrics-only
+    OPENROUTER_API_KEY=... python examples/ckd_progression.py --model openai/gpt-5.5 --n-synthetic 80
+    OPENROUTER_API_KEY=... python examples/ckd_progression.py --model anthropic/claude-4.7-opus --n-synthetic 80 --metrics-only
 """
 
 from __future__ import annotations
