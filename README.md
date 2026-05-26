@@ -1,5 +1,8 @@
 # Krisis
 
+[![PyPI](https://img.shields.io/pypi/v/krisis.svg)](https://pypi.org/project/krisis/)
+[![PyPI downloads](https://static.pepy.tech/badge/krisis)](https://pepy.tech/project/krisis)
+
 Clinical evaluation framework for testing LLM safety behavior in medical reasoning.
 
 Krisis evaluates not only whether an LLM is correct, but whether it knows when
