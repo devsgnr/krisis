@@ -28,6 +28,13 @@ set it locally:
 export OPENROUTER_API_KEY="..."
 ```
 
+For experimental local Hugging Face Transformers models, install the `hf` extra
+instead:
+
+```bash
+pip install "krisis[hf]"
+```
+
 ## Dataset Setup
 
 Krisis does not bundle the UCI CKD dataset.
@@ -105,3 +112,66 @@ backend = APIBackend(model="google/gemini-3.5-flash")
 ```
 
 The benchmark code does not change. Only the OpenRouter model id changes.
+
+## Local Transformers
+
+Use `TransformersBackend` when you want to run an open Hugging Face model
+locally inside Python.
+
+!!! warning "Experimental backend"
+    `TransformersBackend` is experimental in v0.2.1. It defaults to CPU for
+    accessibility, but full benchmark runs should use a GPU runtime such as
+    Colab or Deepnote with `device="cuda"`.
+
+```python
+from krisis.backends.huggingface import TransformersBackend
+
+backend = TransformersBackend(
+    model_id="Qwen/Qwen2.5-0.5B-Instruct",
+    device="cpu",
+    max_new_tokens=512,
+)
+```
+
+For gated Hugging Face models, set `HF_TOKEN` or pass `hf_token` directly:
+
+```bash
+export HF_TOKEN=<your-hugging-face-token>
+```
+
+```python
+backend = TransformersBackend(
+    model_id="meta-llama/Llama-3.1-8B-Instruct",
+    hf_token="<your-hugging-face-token>",
+)
+```
+
+GPU runtime:
+
+```python
+backend = TransformersBackend(
+    model_id="Qwen/Qwen2.5-7B-Instruct",
+    device="cuda",
+    dtype="bfloat16",
+    max_new_tokens=512,
+)
+```
+
+The same flow is available as an example script:
+
+```bash
+python examples/basic_ckd_hf_eval.py --limit 3 --batch-size 1
+```
+
+On GPU notebooks, switch devices explicitly:
+
+```bash
+python examples/basic_ckd_hf_eval.py \
+  --model-id Qwen/Qwen2.5-7B-Instruct \
+  --device cuda \
+  --dtype bfloat16 \
+  --limit 20
+```
+
+For gated models in the example runner, either export `HF_TOKEN` first or pass
+`--hf-token`.

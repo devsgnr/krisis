@@ -5,6 +5,10 @@ Krisis uses a single `APIBackend` powered by OpenRouter: the same clinical task
 can run across OpenAI, Anthropic, Grok, Gemini, and other routed models by
 changing only the model id.
 
+Krisis also includes an experimental `TransformersBackend` for local Hugging
+Face models. It defaults to CPU and can use GPU runtimes by passing
+`device="cuda"`.
+
 ## API Backend
 
 | Backend | Default model | API key |
@@ -27,6 +31,63 @@ backend = APIBackend(
     model="anthropic/claude-opus-4.7",
     reasoning_effort="low",
 )
+```
+
+## Local Transformers Backend
+
+Install the Hugging Face extra:
+
+```bash
+pip install "krisis[hf]"
+```
+
+!!! warning "Experimental backend"
+    `TransformersBackend` is experimental in v0.2.1. It is useful for Colab,
+    Deepnote, and local GPU experiments, but full benchmark runs on CPU will be
+    very slow and the backend API may still change as it is hardened.
+
+Then provide a Hugging Face model id:
+
+```python
+from krisis.backends.huggingface import TransformersBackend
+
+backend = TransformersBackend(
+    model_id="Qwen/Qwen2.5-0.5B-Instruct",
+    device="cpu",
+    max_new_tokens=512,
+)
+```
+
+Gated Hugging Face models can use either the `HF_TOKEN` environment variable or
+the explicit `hf_token` argument:
+
+```python
+backend = TransformersBackend(
+    model_id="meta-llama/Llama-3.1-8B-Instruct",
+    device="cuda",
+    hf_token="<your-hugging-face-token>",
+)
+```
+
+For Colab, Deepnote, or another GPU runtime:
+
+```python
+backend = TransformersBackend(
+    model_id="Qwen/Qwen2.5-7B-Instruct",
+    device="cuda",
+    dtype="bfloat16",
+    max_new_tokens=512,
+)
+```
+
+!!! warning "Local model performance"
+    CPU inference can be very slow. For serious benchmarking with local
+    Transformers models, use a GPU runtime and start with a small batch size.
+
+Example script:
+
+```bash
+python examples/basic_ckd_hf_eval.py --limit 3 --batch-size 1
 ```
 
 ## Backend Contract

@@ -7,6 +7,7 @@ import os
 
 from krisis.backends.api import DEFAULT_API_MODEL, APIBackend
 from krisis.backends.base import BaseBackend
+from krisis.backends.huggingface import DEFAULT_HF_MODEL, TransformersBackend
 from krisis.benchmark import Benchmark
 from krisis.data.base import FeatureSet, SuiteConfig, Task
 from krisis.data.ckd.suite import CKDSuite
@@ -95,6 +96,63 @@ def run_ckd_benchmark(
         print(format_report(result))
 
 
+def run_ckd_hf_benchmark(
+    *,
+    task: Task,
+    model_id: str,
+    device: str,
+    dtype: str | None,
+    max_new_tokens: int,
+    temperature: float | None,
+    do_sample: bool,
+    trust_remote_code: bool,
+    hf_token: str | None,
+    limit: int | None,
+    n_synthetic: int,
+    features: FeatureSet,
+    data_path: str,
+    batch_size: int,
+    max_concurrency: int,
+    as_json: bool = False,
+    metrics_only: bool = False,
+    include_results: bool = False,
+) -> None:
+    backend = TransformersBackend(
+        model_id=model_id,
+        device=device,
+        dtype=dtype,
+        max_new_tokens=max_new_tokens,
+        temperature=temperature,
+        do_sample=do_sample,
+        trust_remote_code=trust_remote_code,
+        hf_token=hf_token,
+    )
+    suite = CKDSuite(
+        config=SuiteConfig(
+            features=features,
+            task=task,
+            n_synthetic=n_synthetic,
+        ),
+        data_path=data_path,
+    )
+    records = suite.load()
+    if limit is not None:
+        records = records[:limit]
+
+    result = Benchmark(
+        suite,
+        backend,
+        batch_size=batch_size,
+        max_concurrency=max_concurrency,
+    ).run(records=records)
+    if metrics_only:
+        print(format_metrics_json_report(result))
+    elif as_json:
+        print(format_json_report(result, include_results=include_results))
+    else:
+        print(format_report(result))
+
+
 def build_ckd_parser(description: str) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
@@ -102,7 +160,7 @@ def build_ckd_parser(description: str) -> argparse.ArgumentParser:
         default=None,
         help=(
             "OpenRouter model id. Defaults to openai/gpt-5.5. Examples: "
-            "anthropic/claude-4.7-opus, x-ai/grok-4.3, google/gemini-3.5-flash."
+            "anthropic/claude-opus-4.7, x-ai/grok-4.3, google/gemini-3.5-flash."
         ),
     )
     parser.add_argument(
@@ -170,6 +228,113 @@ def build_ckd_parser(description: str) -> argparse.ArgumentParser:
         type=int,
         default=1,
         help="Number of batch API calls to run at once. Increase carefully for rate limits.",
+    )
+    parser.add_argument(
+        "--features",
+        choices=[feature_set.value for feature_set in FeatureSet],
+        default=FeatureSet.FULL.value,
+        help="Feature set to expose to the model. Defaults to full.",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help=(
+            "Print aggregate benchmark results as JSON instead of text. "
+            "Includes redacted prompt templates in extras.prompt_templates."
+        ),
+    )
+    parser.add_argument(
+        "--metrics-only",
+        action="store_true",
+        help="Print only the metrics block as JSON.",
+    )
+    parser.add_argument(
+        "--include-results",
+        action="store_true",
+        help="Include row-level evaluation results in JSON output.",
+    )
+    return parser
+
+
+def build_ckd_hf_parser(description: str) -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument(
+        "--model-id",
+        default=DEFAULT_HF_MODEL,
+        help=(
+            "Hugging Face model id. Defaults to "
+            f"{DEFAULT_HF_MODEL}. Use a small model for CPU smoke tests."
+        ),
+    )
+    parser.add_argument(
+        "--device",
+        default="cpu",
+        help="Transformers device. Defaults to cpu. Use cuda in GPU runtimes.",
+    )
+    parser.add_argument(
+        "--dtype",
+        choices=["float16", "float32", "bfloat16"],
+        default=None,
+        help="Optional torch dtype for model loading. Common GPU value: bfloat16.",
+    )
+    parser.add_argument(
+        "--max-new-tokens",
+        type=int,
+        default=1024,
+        help="Maximum generated tokens per row.",
+    )
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=None,
+        help="Optional generation temperature. Omit for deterministic eval defaults.",
+    )
+    parser.add_argument(
+        "--do-sample",
+        action="store_true",
+        help="Enable sampling. Omit for deterministic eval defaults.",
+    )
+    parser.add_argument(
+        "--trust-remote-code",
+        action="store_true",
+        help="Pass trust_remote_code=True to Hugging Face loaders.",
+    )
+    parser.add_argument(
+        "--hf-token",
+        default=None,
+        help="Hugging Face access token for gated models. Defaults to HF_TOKEN.",
+    )
+    parser.add_argument(
+        "--task",
+        choices=[task.value for task in Task],
+        default=Task.DETECTION.value,
+    )
+    parser.add_argument(
+        "--data-path",
+        default="datasets/ckd/ckd_full.csv",
+        help="Path to a local UCI CKD CSV file.",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Optional row cap for smoke tests. Recommended for CPU runs.",
+    )
+    parser.add_argument("--n-synthetic", type=int, default=0)
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=1,
+        help=(
+            "Number of patient rows per generation call. Defaults to 1 for "
+            "local model reliability; increase carefully on GPU."
+        ),
+    )
+    parser.add_argument(
+        "--max-concurrency",
+        type=int,
+        default=1,
+        help="Number of generation calls to run at once. Keep at 1 for local models.",
     )
     parser.add_argument(
         "--features",

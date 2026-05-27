@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "krisis"
-version = "0.2.0"
+version = "0.2.1"
 description = "A clinical evaluation framework for large language models."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -61,6 +61,8 @@ hf = [
     "transformers>=4.40.0",
     "huggingface-hub>=0.23.0",
     "torch>=2.2.0",
+    "accelerate>=0.33.0",
+    "sentencepiece>=0.2.0",
 ]
 
 # pip install krisis[all]
@@ -70,6 +72,8 @@ all = [
     "transformers>=4.40.0",
     "huggingface-hub>=0.23.0",
     "torch>=2.2.0",
+    "accelerate>=0.33.0",
+    "sentencepiece>=0.2.0",
 ]
 
 # pip install krisis[dev]

@@ -5,8 +5,11 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import Any
 
+import pytest
+
 from krisis.backends.api import DEFAULT_API_MODEL, APIBackend
 from krisis.backends.batching import parse_batch_response
+from krisis.backends.huggingface import HF_BACKEND_EXPERIMENTAL, TransformersBackend
 from krisis.backends.retry import is_retryable_exception
 from krisis.data.base import PatientRecord, Task
 
@@ -199,3 +202,84 @@ def test_batch_parser_repairs_missing_commas_between_objects() -> None:
 
     assert [r.prediction for r in responses] == [0, None]
     assert [r.abstained for r in responses] == [False, True]
+
+
+def test_transformers_backend_defaults_to_cpu_and_parses_single_response() -> None:
+    prompts: list[str] = []
+
+    def generator(batch_prompts: list[str]) -> list[str]:
+        prompts.extend(batch_prompts)
+        return ['{"abstained": false, "confidence": 0.82, "prediction": 0}']
+
+    backend = TransformersBackend(
+        model_id="test/model",
+        generator=generator,
+    )
+    record = PatientRecord(features={"sc": 2.4, "htn": 1.0}, label=0)
+
+    response = backend.evaluate(record, Task.DETECTION)
+
+    assert backend.name == "hf:test/model"
+    assert HF_BACKEND_EXPERIMENTAL is True
+    assert backend.experimental is True
+    assert backend._device == "cpu"
+    assert response.prediction == 0
+    assert response.abstained is False
+    assert response.confidence == 0.82
+    assert response.prompt_mode == "single"
+    assert "[PATIENT_MARKERS_REDACTED]" in response.prompt[1]["content"]
+    assert "SYSTEM:" in prompts[0]
+    assert "ASSISTANT:" in prompts[0]
+
+
+def test_transformers_backend_reads_hf_token_from_environment(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("HF_TOKEN", "hf_test_token")
+
+    backend = TransformersBackend(
+        model_id="test/model",
+        generator=lambda prompts: [
+            '{"abstained": false, "confidence": 0.82, "prediction": 0}'
+        ],
+    )
+
+    assert backend._hf_token == "hf_test_token"
+
+
+def test_transformers_backend_batches_records_with_shared_prompt() -> None:
+    prompts: list[str] = []
+
+    def generator(batch_prompts: list[str]) -> list[str]:
+        prompts.extend(batch_prompts)
+        return [
+            (
+                '{"results":['
+                '{"id":"case_0","abstained":false,"confidence":0.81,"prediction":0},'
+                '{"id":"case_1","abstained":true,"confidence":0.43,"prediction":null}'
+                "]}"
+            )
+        ]
+
+    backend = TransformersBackend(
+        model_id="test/model",
+        device="cuda",
+        generator=generator,
+    )
+    records = [
+        PatientRecord(features={"sc": 2.4}, label=0),
+        PatientRecord(features={"sc": 1.0}, label=1),
+    ]
+
+    responses = backend.evaluate_batch(records, Task.DETECTION)
+
+    assert backend._device == "cuda"
+    assert [r.prediction for r in responses] == [0, None]
+    assert [r.abstained for r in responses] == [False, True]
+    assert all(r.prompt_mode == "batch" for r in responses)
+    assert all(
+        "[BATCH_PATIENT_DATA_REDACTED]" in r.prompt[1]["content"] for r in responses
+    )
+    assert len(prompts) == 1
+    assert "case_0" in prompts[0]
+    assert "case_1" in prompts[0]

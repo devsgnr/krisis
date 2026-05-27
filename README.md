@@ -76,7 +76,7 @@ Then create an API key from
 export OPENROUTER_API_KEY="..."
 ```
 
-Hugging Face support will use the `hf` extra when implemented:
+Install experimental local Hugging Face Transformers support:
 
 ```bash
 pip install "krisis[hf]"
@@ -198,6 +198,25 @@ from how often it chose not to answer.
 | API | `APIBackend` | `anthropic/claude-opus-4.7` |
 | API | `APIBackend` | `x-ai/grok-4.3` |
 | API | `APIBackend` | `google/gemini-3.5-flash` |
+| experimental local HF | `TransformersBackend` | `Qwen/Qwen2.5-0.5B-Instruct` |
+
+`TransformersBackend` is experimental in v0.2.1. It is meant for GPU notebooks
+and local experimentation; CPU runs are useful for smoke tests but too slow for
+serious benchmark runs.
+
+For gated Hugging Face models, set `HF_TOKEN` or pass `hf_token` directly:
+
+```bash
+export HF_TOKEN=<your-hugging-face-token>
+```
+
+```python
+backend = TransformersBackend(
+    model_id="meta-llama/Llama-3.1-8B-Instruct",
+    device="cuda",
+    hf_token="<your-hugging-face-token>",
+)
+```
 
 All backends return the same structured fields:
 
@@ -211,6 +230,14 @@ output_tokens
 total_tokens
 ```
 
+Run a CKD smoke test with a local Transformers model:
+
+```bash
+python examples/basic_ckd_hf_eval.py --limit 3 --batch-size 1
+```
+
+Use a GPU runtime such as Colab or Deepnote by passing `--device cuda`.
+
 ## Citation
 
 If you use Krisis in research, please cite it as software:
@@ -220,7 +247,7 @@ If you use Krisis in research, please cite it as software:
   author = {Watila, Emmanuel},
   title = {Krisis: A Clinical Evaluation Framework for Large Language Models},
   year = {2026},
-  version = {0.2.0},
+  version = {0.2.1},
   url = {https://github.com/devsgnr/krisis}
 }
 ```

@@ -22,6 +22,14 @@ The backend page defines the reusable interface that model backends implement.
         - APIBackend
         - make_api_backend
 
+## Transformers Backend
+
+::: krisis.backends.huggingface
+    options:
+      members:
+        - TransformersBackend
+        - make_transformers_backend
+
 ## Provider Backend Controls
 
 The primary backend is `APIBackend`.
@@ -42,6 +50,20 @@ it as `OPENROUTER_API_KEY` or pass it through the `api_key` parameter.
 | `max_retries` | `2` | Number of retries after transient failures |
 | `retry_base_seconds` | `0.5` | Initial exponential-backoff delay |
 | `retry_max_seconds` | `8.0` | Maximum exponential-backoff delay |
+
+For local Hugging Face models, the experimental `TransformersBackend` accepts a
+`model_id` and defaults to `device="cpu"`. Use `device="cuda"` in GPU notebooks
+such as Colab or Deepnote. For gated models, pass `hf_token` directly or set
+`HF_TOKEN`.
+
+| Control | Default | Purpose |
+|---|---|---|
+| `model_id` | `Qwen/Qwen2.5-0.5B-Instruct` | Hugging Face model ID |
+| `device` | `cpu` | Runtime device, such as `cpu` or `cuda` |
+| `dtype` | `None` | Optional torch dtype, such as `bfloat16` |
+| `max_new_tokens` | `1024` | Per-row generated token cap |
+| `hf_token` | `HF_TOKEN` | Access token for gated models |
+| `trust_remote_code` | `False` | Allows custom model code when required |
 
 Default token caps are intentionally conservative. `APIBackend` defaults to
 `1024` output tokens per row because larger reasoning models can spend part of

@@ -2,7 +2,7 @@
 
 Usage:
     OPENROUTER_API_KEY=... python examples/ckd_detection.py --model openai/gpt-5.5
-    OPENROUTER_API_KEY=... python examples/ckd_detection.py --model anthropic/claude-4.7-opus --metrics-only
+    OPENROUTER_API_KEY=... python examples/ckd_detection.py --model anthropic/claude-opus-4.7 --metrics-only
 """
 
 from __future__ import annotations
