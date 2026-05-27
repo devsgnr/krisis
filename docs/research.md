@@ -128,7 +128,7 @@ If you use Krisis in research, cite it as software:
   author = {Watila, Emmanuel},
   title = {Krisis: A Clinical Evaluation Framework for Large Language Models},
   year = {2026},
-  version = {0.2.2},
+  version = {0.2.3},
   url = {https://github.com/devsgnr/krisis}
 }
 ```

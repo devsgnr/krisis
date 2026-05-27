@@ -336,3 +336,41 @@ def test_transformers_backend_generation_usage_uses_token_usage_shape() -> None:
     assert usage.input_tokens == 2
     assert usage.output_tokens == 3
     assert usage.total_tokens == 5
+
+
+def test_transformers_backend_folds_system_message_for_chat_templates_without_system_role() -> None:
+    rendered_messages: list[list[dict[str, str]]] = []
+
+    class _SystemAverseTokenizer:
+        def apply_chat_template(
+            self,
+            messages: list[dict[str, str]],
+            tokenize: bool,
+            add_generation_prompt: bool,
+        ) -> str:
+            rendered_messages.append(messages)
+            if any(message["role"] == "system" for message in messages):
+                raise ValueError("system role is not supported")
+            return "rendered prompt"
+
+    backend = TransformersBackend(
+        model_id="test/gemma-like",
+        tokenizer=_SystemAverseTokenizer(),
+        model=object(),
+    )
+
+    prompt = backend._messages_to_prompt(
+        [
+            {"role": "system", "content": "System instructions."},
+            {"role": "user", "content": "Patient markers."},
+        ]
+    )
+
+    assert prompt == "rendered prompt"
+    assert len(rendered_messages) == 2
+    assert rendered_messages[1] == [
+        {
+            "role": "user",
+            "content": "System instructions.\n\nPatient markers.",
+        }
+    ]

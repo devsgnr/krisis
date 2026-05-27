@@ -223,6 +223,12 @@ class TransformersBackend(BaseBackend):
             "max_new_tokens": self._max_new_tokens * max_new_tokens_multiplier,
             "do_sample": self._do_sample,
         }
+        pad_token_id = getattr(self._tokenizer, "pad_token_id", None)
+        eos_token_id = getattr(self._tokenizer, "eos_token_id", None)
+        if pad_token_id is not None:
+            generation_kwargs["pad_token_id"] = pad_token_id
+        elif eos_token_id is not None:
+            generation_kwargs["pad_token_id"] = eos_token_id
         if self._temperature is not None:
             generation_kwargs["temperature"] = self._temperature
 
@@ -241,15 +247,49 @@ class TransformersBackend(BaseBackend):
     def _messages_to_prompt(self, messages: list[dict[str, str]]) -> str:
         tokenizer = self._tokenizer
         if tokenizer is not None and hasattr(tokenizer, "apply_chat_template"):
-            try:
-                return tokenizer.apply_chat_template(
-                    messages,
-                    tokenize=False,
-                    add_generation_prompt=True,
-                )
-            except Exception:
-                pass
+            rendered = self._apply_chat_template(messages)
+            if rendered is not None:
+                return rendered
+
+            user_only_messages = self._fold_system_messages_into_user(messages)
+            rendered = self._apply_chat_template(user_only_messages)
+            if rendered is not None:
+                return rendered
+
         return self._plain_text_prompt(messages)
+
+    def _apply_chat_template(self, messages: list[dict[str, str]]) -> str | None:
+        assert self._tokenizer is not None
+        try:
+            return self._tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+        except Exception:
+            return None
+
+    @staticmethod
+    def _fold_system_messages_into_user(
+        messages: list[dict[str, str]],
+    ) -> list[dict[str, str]]:
+        system_parts = [
+            message["content"] for message in messages if message["role"] == "system"
+        ]
+        non_system_messages = [
+            dict(message) for message in messages if message["role"] != "system"
+        ]
+        if not system_parts:
+            return non_system_messages
+
+        system_text = "\n\n".join(system_parts)
+        if non_system_messages and non_system_messages[0]["role"] == "user":
+            non_system_messages[0]["content"] = (
+                f"{system_text}\n\n{non_system_messages[0]['content']}"
+            )
+            return non_system_messages
+
+        return [{"role": "user", "content": system_text}, *non_system_messages]
 
     @staticmethod
     def _plain_text_prompt(messages: list[dict[str, str]]) -> str:
