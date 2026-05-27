@@ -34,6 +34,8 @@ Documented assumption:
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 import pandas as pd
 
@@ -50,6 +52,8 @@ CKD_EPI_ALPHA_MALE = -0.302
 CKD_EPI_AGE_FACTOR = 0.9938
 CKD_EPI_BASE = 142
 CKD_EPI_SEX_FACTOR_FEMALE = 1.012  # multiplier applied for female patients
+MIN_SERUM_CREATININE = 0.4
+MIN_AGE = 0.0
 
 # KDIGO 2024 eGFR staging thresholds (mL/min/1.73m²)
 # Source: KDIGO 2024 CKD Clinical Practice Guidelines
@@ -150,6 +154,13 @@ def compute_egfr(
         Inker LA et al. New Creatinine- and Cystatin C–Based Equations to
         Estimate GFR without Race. NEJM 2021; 385:1737-1749.
     """
+    creatinine = _bounded_float(
+        creatinine,
+        lower=MIN_SERUM_CREATININE,
+        fallback=MIN_SERUM_CREATININE,
+    )
+    age = _bounded_float(age, lower=MIN_AGE, fallback=MIN_AGE)
+
     if sex == "female":
         kappa = CKD_EPI_KAPPA_FEMALE
         alpha = CKD_EPI_ALPHA_FEMALE
@@ -168,6 +179,16 @@ def compute_egfr(
         egfr *= CKD_EPI_SEX_FACTOR_FEMALE
 
     return round(egfr, 2)
+
+
+def _bounded_float(value: float, *, lower: float, fallback: float) -> float:
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return fallback
+    if not math.isfinite(numeric):
+        return fallback
+    return max(numeric, lower)
 
 
 def assign_ckd_stage(egfr: float, split_stage_3: bool = SPLIT_STAGE_3) -> int:

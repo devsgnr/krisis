@@ -42,9 +42,15 @@ pip install "krisis[hf]"
 ```
 
 !!! warning "Experimental backend"
-    `TransformersBackend` is experimental in v0.2.3. It is useful for Colab,
+    `TransformersBackend` is experimental in v0.2.6. It is useful for Colab,
     Deepnote, and local GPU experiments, but full benchmark runs on CPU will be
     very slow and the backend API may still change as it is hardened.
+
+!!! warning "Text-generation models only"
+    The Hugging Face backend only supports causal text-generation models that
+    can be loaded with `AutoModelForCausalLM`. Classifier, embedding,
+    masked-language, seq2seq, and multimodal-only models are not supported and
+    will raise an error during backend initialization.
 
 Then provide a Hugging Face model id:
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from types import SimpleNamespace
 from typing import Any
 
@@ -9,7 +10,11 @@ import pytest
 
 from krisis.backends.api import DEFAULT_API_MODEL, APIBackend
 from krisis.backends.batching import parse_batch_response
-from krisis.backends.huggingface import HF_BACKEND_EXPERIMENTAL, TransformersBackend
+from krisis.backends.huggingface import (
+    HF_BACKEND_EXPERIMENTAL,
+    TransformersBackend,
+    UnsupportedTransformersModelError,
+)
 from krisis.backends.retry import is_retryable_exception
 from krisis.data.base import PatientRecord, Task
 
@@ -247,6 +252,60 @@ def test_transformers_backend_reads_hf_token_from_environment(
     assert backend._hf_token == "hf_test_token"
 
 
+def test_transformers_backend_rejects_non_causal_lm_models(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class _FakeTokenizer:
+        pad_token = "<pad>"
+
+    class _FakeAutoTokenizer:
+        @staticmethod
+        def from_pretrained(model_id: str, **kwargs: Any) -> _FakeTokenizer:
+            return _FakeTokenizer()
+
+    class _FakeAutoModelForCausalLM:
+        @staticmethod
+        def from_pretrained(model_id: str, **kwargs: Any) -> object:
+            raise ValueError("Unsupported architecture for AutoModelForCausalLM")
+
+    fake_torch = SimpleNamespace(
+        float16=object(),
+        float32=object(),
+        bfloat16=object(),
+    )
+    fake_transformers = SimpleNamespace(
+        AutoTokenizer=_FakeAutoTokenizer,
+        AutoModelForCausalLM=_FakeAutoModelForCausalLM,
+    )
+    monkeypatch.setitem(sys.modules, "torch", fake_torch)
+    monkeypatch.setitem(sys.modules, "transformers", fake_transformers)
+
+    with pytest.raises(
+        UnsupportedTransformersModelError,
+        match="only supports Hugging Face causal text-generation models",
+    ):
+        TransformersBackend(model_id="sentence-transformers/all-MiniLM-L6-v2")
+
+
+def test_transformers_backend_warns_and_abstains_on_malformed_single_response() -> None:
+    backend = TransformersBackend(
+        model_id="test/medgemma-like",
+        generator=lambda prompts: ["I cannot provide the requested JSON."],
+    )
+    record = PatientRecord(features={"sc": 2.4, "htn": 1.0}, label=0)
+
+    with pytest.warns(
+        RuntimeWarning,
+        match="test/medgemma-like couldn't return response as JSON",
+    ):
+        response = backend.evaluate(record, Task.DETECTION)
+
+    assert response.prediction is None
+    assert response.abstained is True
+    assert response.confidence is None
+    assert response.raw_response == "I cannot provide the requested JSON."
+
+
 def test_transformers_backend_batches_records_with_shared_prompt() -> None:
     prompts: list[str] = []
 
@@ -308,12 +367,12 @@ def test_transformers_backend_generation_usage_uses_token_usage_shape() -> None:
             return_tensors: str,
             padding: bool,
         ) -> _FakeEncoded:
-                return _FakeEncoded(
-                    {
-                        "input_ids": SimpleNamespace(shape=(1, 2)),
-                        "attention_mask": [
-                            SimpleNamespace(sum=lambda: SimpleNamespace(item=lambda: 2))
-                        ],
+            return _FakeEncoded(
+                {
+                    "input_ids": SimpleNamespace(shape=(1, 2)),
+                    "attention_mask": [
+                        SimpleNamespace(sum=lambda: SimpleNamespace(item=lambda: 2))
+                    ],
                 }
             )
 

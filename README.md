@@ -200,9 +200,14 @@ from how often it chose not to answer.
 | API | `APIBackend` | `google/gemini-3.5-flash` |
 | experimental local HF | `TransformersBackend` | `Qwen/Qwen2.5-0.5B-Instruct` |
 
-`TransformersBackend` is experimental in v0.2.3. It is meant for GPU notebooks
+`TransformersBackend` is experimental in v0.2.6. It is meant for GPU notebooks
 and local experimentation; CPU runs are useful for smoke tests but too slow for
 serious benchmark runs.
+
+The Hugging Face backend supports **causal text-generation models only**:
+models loadable with `AutoModelForCausalLM`. Classifier, embedding,
+masked-language, seq2seq, and multimodal-only models are outside this backend's
+scope and will raise an initialization error.
 
 For gated Hugging Face models, set `HF_TOKEN` or pass `hf_token` directly:
 
@@ -247,7 +252,7 @@ If you use Krisis in research, please cite it as software:
   author = {Watila, Emmanuel},
   title = {Krisis: A Clinical Evaluation Framework for Large Language Models},
   year = {2026},
-  version = {0.2.3},
+  version = {0.2.6},
   url = {https://github.com/devsgnr/krisis}
 }
 ```

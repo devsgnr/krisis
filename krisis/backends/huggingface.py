@@ -10,6 +10,7 @@ runtimes.
 from __future__ import annotations
 
 import os
+import warnings
 from collections.abc import Callable
 from typing import Any
 
@@ -31,18 +32,25 @@ from krisis.tasks.base import parse_model_response
 
 DEFAULT_HF_MODEL = "Qwen/Qwen2.5-0.5B-Instruct"
 HF_BACKEND_EXPERIMENTAL = True
+MALFORMED_RESPONSE_PREVIEW_CHARS = 4000
+
+
+class UnsupportedTransformersModelError(ValueError):
+    """Raised when a Hugging Face model is not a causal text-generation model."""
 
 
 class TransformersBackend(BaseBackend):
     """
     Experimental local Hugging Face Transformers backend.
 
-    This backend is intended for GPU notebooks and local experimentation. CPU
-    runs are supported for smoke tests, but full CKD benchmark runs are expected
-    to be slow without GPU acceleration.
+    This backend supports causal text-generation models loadable with
+    ``AutoModelForCausalLM``. It is intended for GPU notebooks and local
+    experimentation. CPU runs are supported for smoke tests, but full CKD
+    benchmark runs are expected to be slow without GPU acceleration.
 
     Args:
-        model_id: Hugging Face model id, e.g. ``Qwen/Qwen2.5-7B-Instruct``.
+        model_id: Hugging Face causal text-generation model id, e.g.
+            ``Qwen/Qwen2.5-7B-Instruct``.
         device: execution device. Defaults to ``cpu``. Use ``cuda`` in GPU
             runtimes such as Colab or Deepnote.
         dtype: optional torch dtype string (``float16``, ``bfloat16``,
@@ -106,21 +114,51 @@ class TransformersBackend(BaseBackend):
         messages = build_messages(record, task)
         prompt = format_messages_for_audit(messages)
         raw, usage = self._generate_from_messages([messages])
-        raw_text = raw[0].strip()
+        raw_text = raw[0].strip() if raw else ""
         parsed = parse_model_response(raw_text, task)
         if (
             parsed.prediction is None
             and not parsed.abstained
             and parsed.confidence is None
         ):
-            raise ValueError(
-                f"{self.name} returned a non-JSON response that could not be parsed."
+            return self._malformed_response(
+                raw_text=raw_text,
+                prompt=prompt,
+                usage=usage,
             )
 
         return BackendResponse(
             prediction=parsed.prediction,
             abstained=parsed.abstained,
             confidence=parsed.confidence,
+            raw_response=raw_text,
+            prompt=prompt,
+            prompt_mode="single",
+            input_tokens=usage.input_tokens,
+            output_tokens=usage.output_tokens,
+            total_tokens=usage.total_tokens,
+        )
+
+    def _malformed_response(
+        self,
+        *,
+        raw_text: str,
+        prompt: list[dict[str, str]],
+        usage: TokenUsage,
+    ) -> BackendResponse:
+        preview = raw_text or "<empty response>"
+        if len(preview) > MALFORMED_RESPONSE_PREVIEW_CHARS:
+            preview = f"{preview[:MALFORMED_RESPONSE_PREVIEW_CHARS]}..."
+        warnings.warn(
+            f"{self._model_id} couldn't return response as JSON. Raw response:\n"
+            f"{preview}",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+        return BackendResponse(
+            prediction=None,
+            abstained=True,
+            confidence=None,
             raw_response=raw_text,
             prompt=prompt,
             prompt_mode="single",
@@ -175,10 +213,19 @@ class TransformersBackend(BaseBackend):
             self._model_id,
             **tokenizer_kwargs,
         )
-        self._model = AutoModelForCausalLM.from_pretrained(
-            self._model_id,
-            **model_kwargs,
-        )
+        try:
+            self._model = AutoModelForCausalLM.from_pretrained(
+                self._model_id,
+                **model_kwargs,
+            )
+        except (TypeError, ValueError) as exc:
+            raise UnsupportedTransformersModelError(
+                "TransformersBackend only supports Hugging Face causal "
+                "text-generation models loadable with AutoModelForCausalLM. "
+                f"Model '{self._model_id}' could not be loaded as a causal LM. "
+                "Classifier, embedding, masked-language, seq2seq, and "
+                "multimodal-only models are not supported by this backend."
+            ) from exc
         if hasattr(self._model, "to") and self._device:
             self._model.to(self._device)
         if getattr(self._tokenizer, "pad_token", None) is None:

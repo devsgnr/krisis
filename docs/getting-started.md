@@ -119,9 +119,14 @@ Use `TransformersBackend` when you want to run an open Hugging Face model
 locally inside Python.
 
 !!! warning "Experimental backend"
-    `TransformersBackend` is experimental in v0.2.3. It defaults to CPU for
+    `TransformersBackend` is experimental in v0.2.6. It defaults to CPU for
     accessibility, but full benchmark runs should use a GPU runtime such as
     Colab or Deepnote with `device="cuda"`.
+
+!!! warning "Text-generation models only"
+    Use causal text-generation models only. Models that require classifier,
+    embedding, masked-language, seq2seq, or multimodal-only loaders are outside
+    the Hugging Face backend scope and will raise an initialization error.
 
 ```python
 from krisis.backends.huggingface import TransformersBackend

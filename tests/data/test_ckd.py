@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 from krisis.data.base import FeatureSet, SuiteConfig, Task
-from krisis.data.ckd.engineer import CKDFeatureEngineer
+from krisis.data.ckd.engineer import CKDFeatureEngineer, compute_egfr
 from krisis.data.ckd.preprocess import FINAL_COLUMN_ORDER, CKDPreprocessor
 from krisis.data.ckd.suite import DEFAULT_DATA_PATH, CKDSuite
 from krisis.data.ckd.validate import RAW_COLUMN_ORDER, validate_ckd_csv
@@ -33,6 +33,13 @@ def test_ckd_preprocessor_keeps_unscaled_clinical_frame() -> None:
     assert engineered["egfr"].notna().all()
     assert (engineered["egfr"] > 0).all()
     assert set(engineered["ckd_stage"]).issubset({1, 2, 3, 4, 5})
+
+
+def test_compute_egfr_clamps_nonphysiologic_imputed_inputs() -> None:
+    egfr = compute_egfr(creatinine=-0.2, age=48, sex="female")
+
+    assert isinstance(egfr, float)
+    assert egfr > 0
 
 
 def test_ckd_csv_validation_reorders_canonical_columns() -> None:

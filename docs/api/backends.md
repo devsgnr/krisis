@@ -28,6 +28,7 @@ The backend page defines the reusable interface that model backends implement.
     options:
       members:
         - TransformersBackend
+        - UnsupportedTransformersModelError
         - make_transformers_backend
 
 ## Provider Backend Controls
@@ -55,6 +56,11 @@ For local Hugging Face models, the experimental `TransformersBackend` accepts a
 `model_id` and defaults to `device="cpu"`. Use `device="cuda"` in GPU notebooks
 such as Colab or Deepnote. For gated models, pass `hf_token` directly or set
 `HF_TOKEN`.
+
+`TransformersBackend` intentionally supports only causal text-generation models
+loadable with `AutoModelForCausalLM`. Passing classifier, embedding,
+masked-language, seq2seq, or multimodal-only model IDs raises
+`UnsupportedTransformersModelError`.
 
 | Control | Default | Purpose |
 |---|---|---|
