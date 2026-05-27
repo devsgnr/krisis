@@ -283,3 +283,56 @@ def test_transformers_backend_batches_records_with_shared_prompt() -> None:
     assert len(prompts) == 1
     assert "case_0" in prompts[0]
     assert "case_1" in prompts[0]
+
+
+def test_transformers_backend_generation_usage_uses_token_usage_shape() -> None:
+    class _FakeEncoded(dict):
+        def to(self, device: str) -> "_FakeEncoded":
+            return self
+
+    class _FakeTokenizer:
+        pad_token = None
+        eos_token = "<eos>"
+
+        def apply_chat_template(
+            self,
+            messages: list[dict[str, str]],
+            tokenize: bool,
+            add_generation_prompt: bool,
+        ) -> str:
+            return "prompt"
+
+        def __call__(
+            self,
+            prompts: list[str],
+            return_tensors: str,
+            padding: bool,
+        ) -> _FakeEncoded:
+                return _FakeEncoded(
+                    {
+                        "input_ids": SimpleNamespace(shape=(1, 2)),
+                        "attention_mask": [
+                            SimpleNamespace(sum=lambda: SimpleNamespace(item=lambda: 2))
+                        ],
+                }
+            )
+
+        def batch_decode(self, output_ids: list[list[int]], skip_special_tokens: bool) -> list[str]:
+            return ['{"abstained": false, "confidence": 0.82, "prediction": 0}']
+
+    class _FakeModel:
+        def generate(self, **kwargs: Any) -> list[list[int]]:
+            return [[1, 2, 3, 4, 5]]
+
+    backend = TransformersBackend(
+        model_id="test/model",
+        tokenizer=_FakeTokenizer(),
+        model=_FakeModel(),
+    )
+
+    raw_texts, usage = backend._generate_from_messages([[{"role": "user", "content": "x"}]])
+
+    assert raw_texts == ['{"abstained": false, "confidence": 0.82, "prediction": 0}']
+    assert usage.input_tokens == 2
+    assert usage.output_tokens == 3
+    assert usage.total_tokens == 5

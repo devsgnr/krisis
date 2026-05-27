@@ -119,7 +119,7 @@ Use `TransformersBackend` when you want to run an open Hugging Face model
 locally inside Python.
 
 !!! warning "Experimental backend"
-    `TransformersBackend` is experimental in v0.2.1. It defaults to CPU for
+    `TransformersBackend` is experimental in v0.2.2. It defaults to CPU for
     accessibility, but full benchmark runs should use a GPU runtime such as
     Colab or Deepnote with `device="cuda"`.
 

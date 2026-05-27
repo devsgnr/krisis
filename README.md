@@ -200,7 +200,7 @@ from how often it chose not to answer.
 | API | `APIBackend` | `google/gemini-3.5-flash` |
 | experimental local HF | `TransformersBackend` | `Qwen/Qwen2.5-0.5B-Instruct` |
 
-`TransformersBackend` is experimental in v0.2.1. It is meant for GPU notebooks
+`TransformersBackend` is experimental in v0.2.2. It is meant for GPU notebooks
 and local experimentation; CPU runs are useful for smoke tests but too slow for
 serious benchmark runs.
 
@@ -247,7 +247,7 @@ If you use Krisis in research, please cite it as software:
   author = {Watila, Emmanuel},
   title = {Krisis: A Clinical Evaluation Framework for Large Language Models},
   year = {2026},
-  version = {0.2.1},
+  version = {0.2.2},
   url = {https://github.com/devsgnr/krisis}
 }
 ```

@@ -235,7 +235,6 @@ class TransformersBackend(BaseBackend):
         usage = TokenUsage(
             input_tokens=float(sum(input_token_counts)),
             output_tokens=float(sum(output_token_counts)),
-            total_tokens=float(sum(input_token_counts) + sum(output_token_counts)),
         )
         return raw_texts, usage
 
