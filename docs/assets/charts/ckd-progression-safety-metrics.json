@@ -1,0 +1,253 @@
+{
+  "data": [
+    {
+      "name": "Deferral Alignment",
+      "type": "bar",
+      "x": [
+        "claude-opus-4.7",
+        "grok-4.3",
+        "gpt-5.5",
+        "gemini-3.5-flash",
+        "deepseek-v4-pro",
+        "qwen3.6-flash",
+        "llama-4-scout"
+      ],
+      "y": [
+        85.62,
+        80.21,
+        83.75,
+        69.38,
+        72.71,
+        82.08,
+        39.38
+      ],
+      "marker": {
+        "color": "#4C78A8"
+      },
+      "error_y": {
+        "type": "data",
+        "array": [
+          3.8,
+          1.3,
+          4.1,
+          6.34,
+          6.88,
+          1.57,
+          5.96
+        ],
+        "visible": true,
+        "color": "#FFFFFF",
+        "thickness": 1.1,
+        "width": 4
+      },
+      "hovertemplate": "<br>&nbsp;&nbsp;<b>%{x}</b>&nbsp;&nbsp;<br>&nbsp;&nbsp;Deferral Alignment: %{y:.2f}%&nbsp;&nbsp;<br>&nbsp;&nbsp;Std: %{customdata:.2f}%&nbsp;&nbsp;<br><extra></extra>",
+      "customdata": [
+        3.8,
+        1.3,
+        4.1,
+        6.34,
+        6.88,
+        1.57,
+        5.96
+      ],
+      "width": 0.14,
+      "hoverlabel": {
+        "font": {
+          "family": "Inter var, Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+          "color": "#F9FAFB",
+          "size": 12
+        }
+      }
+    },
+    {
+      "name": "Calibration Quality",
+      "type": "bar",
+      "x": [
+        "claude-opus-4.7",
+        "grok-4.3",
+        "gpt-5.5",
+        "gemini-3.5-flash",
+        "deepseek-v4-pro",
+        "qwen3.6-flash",
+        "llama-4-scout"
+      ],
+      "y": [
+        83.33,
+        84.23,
+        86.22,
+        80.5,
+        93.02,
+        84.46,
+        72.4
+      ],
+      "marker": {
+        "color": "#72B7B2"
+      },
+      "error_y": {
+        "type": "data",
+        "array": [
+          1.24,
+          2.56,
+          0.36,
+          4.55,
+          2.49,
+          1.31,
+          2.34
+        ],
+        "visible": true,
+        "color": "#FFFFFF",
+        "thickness": 1.1,
+        "width": 4
+      },
+      "hovertemplate": "<br>&nbsp;&nbsp;<b>%{x}</b>&nbsp;&nbsp;<br>&nbsp;&nbsp;Calibration Quality: %{y:.2f}%&nbsp;&nbsp;<br>&nbsp;&nbsp;Std: %{customdata:.2f}%&nbsp;&nbsp;<br><extra></extra>",
+      "customdata": [
+        1.24,
+        2.56,
+        0.36,
+        4.55,
+        2.49,
+        1.31,
+        2.34
+      ],
+      "width": 0.14,
+      "hoverlabel": {
+        "font": {
+          "family": "Inter var, Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+          "color": "#F9FAFB",
+          "size": 12
+        }
+      }
+    },
+    {
+      "name": "Selective Accuracy",
+      "type": "bar",
+      "x": [
+        "claude-opus-4.7",
+        "grok-4.3",
+        "gpt-5.5",
+        "gemini-3.5-flash",
+        "deepseek-v4-pro",
+        "qwen3.6-flash",
+        "llama-4-scout"
+      ],
+      "y": [
+        98.96,
+        93.95,
+        100.0,
+        76.9,
+        93.15,
+        99.19,
+        55.37
+      ],
+      "marker": {
+        "color": "#F58518"
+      },
+      "error_y": {
+        "type": "data",
+        "array": [
+          1.8,
+          5.89,
+          0.0,
+          6.18,
+          3.11,
+          1.41,
+          1.57
+        ],
+        "visible": true,
+        "color": "#FFFFFF",
+        "thickness": 1.1,
+        "width": 4
+      },
+      "hovertemplate": "<br>&nbsp;&nbsp;<b>%{x}</b>&nbsp;&nbsp;<br>&nbsp;&nbsp;Selective Accuracy: %{y:.2f}%&nbsp;&nbsp;<br>&nbsp;&nbsp;Std: %{customdata:.2f}%&nbsp;&nbsp;<br><extra></extra>",
+      "customdata": [
+        1.8,
+        5.89,
+        0.0,
+        6.18,
+        3.11,
+        1.41,
+        1.57
+      ],
+      "width": 0.14,
+      "hoverlabel": {
+        "font": {
+          "family": "Inter var, Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+          "color": "#F9FAFB",
+          "size": 12
+        }
+      }
+    }
+  ],
+  "layout": {
+    "barmode": "group",
+    "bargap": 0.5,
+    "bargroupgap": 0.1,
+    "plot_bgcolor": "rgba(0,0,0,0)",
+    "paper_bgcolor": "rgba(0,0,0,0)",
+    "font": {
+      "family": "Inter var, Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+      "size": 13,
+      "color": "#f2f5fa"
+    },
+    "hovermode": "closest",
+    "hoverlabel": {
+      "bgcolor": "#111827",
+      "bordercolor": "rgba(148,163,184,0.45)",
+      "font": {
+        "family": "Inter var, Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+        "color": "#F9FAFB",
+        "size": 12
+      }
+    },
+    "legend": {
+      "orientation": "h",
+      "x": 0.5,
+      "xanchor": "center",
+      "y": -0.22,
+      "yanchor": "top",
+      "title": {
+        "text": ""
+      }
+    },
+    "margin": {
+      "l": 48,
+      "r": 24,
+      "t": 16,
+      "b": 96
+    },
+    "xaxis": {
+      "tickangle": 0,
+      "title": null,
+      "showgrid": false,
+      "tickfont": {
+        "family": "Inter var, Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+        "size": 11,
+        "weight": 500,
+        "color": "#f2f5fa"
+      }
+    },
+    "yaxis": {
+      "title": null,
+      "range": [
+        0,
+        105
+      ],
+      "ticksuffix": "%",
+      "gridcolor": "rgba(148,163,184,0.28)"
+    }
+  },
+  "config": {
+    "displayModeBar": false,
+    "responsive": true
+  },
+  "defaultTemplate": {
+    "paper_bgcolor": "rgba(0,0,0,0)",
+    "plot_bgcolor": "rgba(0,0,0,0)",
+    "font.color": "#f2f5fa"
+  },
+  "slateTemplate": {
+    "paper_bgcolor": "rgba(0,0,0,0)",
+    "plot_bgcolor": "rgba(0,0,0,0)",
+    "font.color": "#f2f5fa"
+  }
+}

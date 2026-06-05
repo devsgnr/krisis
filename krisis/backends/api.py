@@ -20,6 +20,7 @@ from krisis.backends.batching import (
     batch_response_schema,
     build_batch_messages,
     distribute_usage_over_batch,
+    nullable_schema,
     parse_batch_response,
     prediction_schema_for_task,
 )
@@ -45,7 +46,7 @@ def _response_format_for_task(task: Task) -> dict[str, Any]:
                 "additionalProperties": False,
                 "properties": {
                     "abstained": {"type": "boolean"},
-                    "confidence": {"type": ["number", "null"]},
+                    "confidence": nullable_schema({"type": "number"}),
                     "prediction": prediction_schema_for_task(task),
                 },
                 "required": ["abstained", "confidence", "prediction"],

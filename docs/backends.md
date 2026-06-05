@@ -42,7 +42,7 @@ pip install "krisis[hf]"
 ```
 
 !!! warning "Experimental backend"
-    `TransformersBackend` is experimental in v0.2.6. It is useful for Colab,
+    `TransformersBackend` is experimental in v0.2.7. It is useful for Colab,
     Deepnote, and local GPU experiments, but full benchmark runs on CPU will be
     very slow and the backend API may still change as it is hardened.
 

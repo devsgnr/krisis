@@ -1,13 +1,13 @@
 {
   "execution": {
     "batch_size": 8,
-    "elapsed_seconds": 57.17197274998762,
-    "input_tokens": 133382.0,
+    "elapsed_seconds": 40.274151917081326,
+    "input_tokens": 88542.0,
     "max_concurrency": 4,
-    "n_api_batches": 30,
-    "n_input_records": 240,
-    "n_prompts_captured": 240,
-    "output_tokens": 41028.0,
+    "n_api_batches": 20,
+    "n_input_records": 160,
+    "n_prompts_captured": 160,
+    "output_tokens": 25124.0,
     "prompt_capture": "evaluation_results.prompt",
     "prompt_data_policy": "patient_data_redacted",
     "prompt_modes": [
@@ -29,81 +29,80 @@
       }
     ],
     "prompt_templates_count": 1,
-    "records_per_second": 4.197861092698642,
-    "token_total": 174410.0
+    "records_per_second": 3.9727714274261303,
+    "token_total": 113666.0
   },
   "metrics": {
     "abstention_rate": {
       "breakdown": {
-        "stage_1": 0.7121212121212122,
-        "stage_2": 0.673469387755102,
-        "stage_3": 0.6666666666666666,
-        "stage_4": 0.6666666666666666,
-        "stage_5": 0.34146341463414637
+        "stage_1": 0.6666666666666666,
+        "stage_2": 0.6666666666666666,
+        "stage_3": 0.5454545454545454,
+        "stage_4": 0.5909090909090909,
+        "stage_5": 0.3333333333333333
       },
       "details": {
-        "n_answered": 90
+        "n_answered": 68
       },
-      "n_abstained": 150,
-      "n_evaluated": 240,
+      "n_abstained": 92,
+      "n_evaluated": 160,
       "name": "abstention_rate",
-      "value": 0.625
+      "value": 0.575
     },
     "accuracy": {
       "breakdown": {
-        "stage_1": 0.18181818181818182,
-        "stage_2": 0.1836734693877551,
-        "stage_3": 0.3137254901960784,
-        "stage_4": 0.3333333333333333,
-        "stage_5": 0.6341463414634146
+        "stage_1": 0.24444444444444444,
+        "stage_2": 0.18181818181818182,
+        "stage_3": 0.3939393939393939,
+        "stage_4": 0.2727272727272727,
+        "stage_5": 0.6666666666666666
       },
       "details": {
-        "n_correct": 74,
-        "n_incorrect": 166,
+        "n_correct": 54,
+        "n_incorrect": 106,
         "treat_abstention_as_neutral": false
       },
-      "n_abstained": 150,
-      "n_evaluated": 240,
+      "n_abstained": 92,
+      "n_evaluated": 160,
       "name": "accuracy",
-      "value": 0.30833333333333335
+      "value": 0.3375
     },
     "answer_rate": {
       "breakdown": {
-        "stage_1": 0.2878787878787879,
-        "stage_2": 0.32653061224489793,
-        "stage_3": 0.3333333333333333,
-        "stage_4": 0.3333333333333333,
-        "stage_5": 0.6585365853658537
+        "stage_1": 0.3333333333333333,
+        "stage_2": 0.3333333333333333,
+        "stage_3": 0.45454545454545453,
+        "stage_4": 0.4090909090909091,
+        "stage_5": 0.6666666666666666
       },
       "details": {
-        "n_answered": 90
+        "n_answered": 68
       },
-      "n_abstained": 150,
-      "n_evaluated": 240,
+      "n_abstained": 92,
+      "n_evaluated": 160,
       "name": "answer_rate",
-      "value": 0.375
+      "value": 0.425
     },
     "balanced_accuracy": {
       "breakdown": {
-        "stage_1": 0.27611044417767105,
-        "stage_2": 0.3215811965811966,
-        "stage_3": 0.1568627450980392,
-        "stage_4": 0.1774193548387097,
-        "stage_5": 0.2222222222222222
+        "stage_1": 0.4385026737967915,
+        "stage_2": 0.2727272727272727,
+        "stage_3": 0.2222222222222222,
+        "stage_4": 0.15
       },
       "details": {},
-      "n_abstained": 150,
-      "n_evaluated": 240,
+      "n_abstained": 92,
+      "n_evaluated": 160,
       "name": "balanced_accuracy",
-      "value": 0.34766918626141924
+      "value": 0.3704192367318666
     },
     "brier_score": {
       "breakdown": {},
       "details": {
         "reason": "non_binary_labels_or_predictions"
       },
-      "n_abstained": 150,
-      "n_evaluated": 90,
+      "n_abstained": 92,
+      "n_evaluated": 68,
       "name": "brier_score",
       "value": null
     },
@@ -111,24 +110,25 @@
       "breakdown": {},
       "details": {
         "confusion": {
-          "abstain_when_should_answer": 42,
-          "answer_when_safe": 61,
-          "answer_when_should_defer": 29,
-          "defer_when_needed": 108
+          "abstain_when_should_answer": 17,
+          "answer_when_safe": 47,
+          "answer_when_should_defer": 21,
+          "defer_when_needed": 75
         },
-        "n_labeled": 240
+        "n_labeled": 160
       },
-      "n_abstained": 150,
-      "n_evaluated": 240,
+      "n_abstained": 92,
+      "n_evaluated": 160,
       "name": "deferral_alignment",
-      "value": 0.7041666666666667
+      "value": 0.7625
     },
     "expected_calibration_error": {
       "breakdown": {
-        "bin_11_gap": 0.75,
-        "bin_12_gap": 0.37962962962962987,
-        "bin_13_gap": 0.09624999999999984,
-        "bin_14_gap": 0.04673913043478228
+        "bin_10_gap": 0.7,
+        "bin_11_gap": 0.25,
+        "bin_12_gap": 0.578125,
+        "bin_13_gap": 0.09999999999999987,
+        "bin_14_gap": 0.045749999999999735
       },
       "details": {
         "bins": [
@@ -223,74 +223,74 @@
             "mean_confidence": null
           },
           {
-            "accuracy": null,
+            "accuracy": 0.0,
             "bin": 10,
-            "count": 0,
-            "gap": null,
+            "count": 1,
+            "gap": 0.7,
             "high": 0.7333333333333333,
             "low": 0.6666666666666666,
-            "mean_confidence": null
+            "mean_confidence": 0.7
           },
           {
-            "accuracy": 0.0,
+            "accuracy": 0.5,
             "bin": 11,
-            "count": 1,
-            "gap": 0.75,
+            "count": 2,
+            "gap": 0.25,
             "high": 0.8,
             "low": 0.7333333333333333,
             "mean_confidence": 0.75
           },
           {
-            "accuracy": 0.4444444444444444,
+            "accuracy": 0.25,
             "bin": 12,
-            "count": 27,
-            "gap": 0.37962962962962987,
+            "count": 16,
+            "gap": 0.578125,
             "high": 0.8666666666666667,
             "low": 0.8,
-            "mean_confidence": 0.8240740740740743
+            "mean_confidence": 0.828125
           },
           {
             "accuracy": 1.0,
             "bin": 13,
-            "count": 16,
-            "gap": 0.09624999999999984,
+            "count": 9,
+            "gap": 0.09999999999999987,
             "high": 0.9333333333333333,
             "low": 0.8666666666666667,
-            "mean_confidence": 0.9037500000000002
+            "mean_confidence": 0.9000000000000001
           },
           {
             "accuracy": 1.0,
             "bin": 14,
-            "count": 46,
-            "gap": 0.04673913043478228,
+            "count": 40,
+            "gap": 0.045749999999999735,
             "high": 1.0,
             "low": 0.9333333333333333,
-            "mean_confidence": 0.9532608695652177
+            "mean_confidence": 0.9542500000000003
           }
         ],
         "n_bins": 15
       },
-      "n_abstained": 150,
-      "n_evaluated": 90,
+      "n_abstained": 92,
+      "n_evaluated": 68,
       "name": "expected_calibration_error",
-      "value": 0.16322222222222207
+      "value": 0.1938235294117645
     },
     "selective_accuracy": {
       "breakdown": {
-        "stage_1": 0.631578947368421,
-        "stage_2": 0.5625,
-        "stage_3": 0.9411764705882353,
-        "stage_4": 1.0,
-        "stage_5": 0.9629629629629629
+        "stage_1": 0.7333333333333333,
+        "stage_2": 0.5454545454545454,
+        "stage_3": 0.8666666666666667,
+        "stage_4": 0.6666666666666666,
+        "stage_5": 1.0
       },
       "details": {
-        "n_correct": 74,
-        "n_incorrect": 16
+        "n_correct": 54,
+        "n_incorrect": 14
       },
-      "n_abstained": 150,
-      "n_evaluated": 90,
+      "n_abstained": 92,
+      "n_evaluated": 68,
       "name": "selective_accuracy",
-      "value": 0.8222222222222222
+      "value": 0.7941176470588235
     }
   }
 }

@@ -19,6 +19,11 @@ from krisis.tasks.base import parse_model_response
 _JSON_FENCE_RE = re.compile(r"```(?:json)?\s*([\s\S]*?)\s*```", re.IGNORECASE)
 
 
+def nullable_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    """Provider-compatible nullable schema without type arrays."""
+    return {"anyOf": [schema, {"type": "null"}]}
+
+
 def case_id(index: int) -> str:
     """Stable per-batch identifier returned by the model."""
     return f"case_{index}"
@@ -27,11 +32,13 @@ def case_id(index: int) -> str:
 def prediction_schema_for_task(task: Task) -> dict[str, Any]:
     """JSON schema fragment for task-specific predictions."""
     if task == Task.PROGRESSION:
-        return {
-            "type": ["string", "null"],
-            "enum": ["stable", "worsening", "improving", None],
-        }
-    return {"type": ["integer", "null"]}
+        return nullable_schema(
+            {
+                "type": "string",
+                "enum": ["stable", "worsening", "improving"],
+            }
+        )
+    return nullable_schema({"type": "integer"})
 
 
 def batch_response_schema(task: Task) -> dict[str, Any]:
@@ -48,7 +55,7 @@ def batch_response_schema(task: Task) -> dict[str, Any]:
                     "properties": {
                         "id": {"type": "string"},
                         "abstained": {"type": "boolean"},
-                        "confidence": {"type": ["number", "null"]},
+                        "confidence": nullable_schema({"type": "number"}),
                         "prediction": prediction_schema_for_task(task),
                     },
                     "required": ["id", "abstained", "confidence", "prediction"],

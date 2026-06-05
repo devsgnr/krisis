@@ -130,8 +130,17 @@ def test_api_backend_progression_schema_uses_string_predictions() -> None:
     request = client.completions.last_request
     assert request is not None
     schema = request["response_format"]["json_schema"]["schema"]
+    assert "type" not in schema["properties"]["confidence"]
     prediction = schema["properties"]["prediction"]
-    assert prediction["enum"] == ["stable", "worsening", "improving", None]
+    assert prediction == {
+        "anyOf": [
+            {
+                "type": "string",
+                "enum": ["stable", "worsening", "improving"],
+            },
+            {"type": "null"},
+        ]
+    }
 
 
 def test_api_backend_batches_records_with_stable_ids() -> None:
@@ -159,6 +168,10 @@ def test_api_backend_batches_records_with_stable_ids() -> None:
     assert request["extra_body"]["reasoning"]["effort"] == "low"
     schema = request["response_format"]["json_schema"]["schema"]
     assert "results" in schema["properties"]
+    prediction_schema = schema["properties"]["results"]["items"]["properties"][
+        "prediction"
+    ]
+    assert prediction_schema == {"anyOf": [{"type": "integer"}, {"type": "null"}]}
     assert "case_0" in request["messages"][1]["content"]
     assert "case_1" in request["messages"][1]["content"]
 

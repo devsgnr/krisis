@@ -6,6 +6,7 @@ __pycache__/
 .coverage
 .ruff_cache/
 .pytest_cache/
+.env.local
 dist/
 site/
 *.egg-info/
